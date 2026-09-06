@@ -368,6 +368,7 @@
     <div class="game-container" id="gameContainer">
         <div id="gameHeader">
             <span id="playerOnlineCount">Pemain: 0</span>
+            <span id="alivePlayersStatus">Sisa Pemain: 0</span>
             <span id="myLivesStatus">Nyawa: ❤️❤️❤️❤️❤️  |  Peluru: [8/8]</span>
         </div>
 
@@ -874,17 +875,25 @@
 
         function updateGameHeader() {
             let totalPlayers = 0;
+            let alivePlayers = 0;
             let myLives = 5;
 
             for (let id in gameState.clients) {
                 let p = gameState.clients[id];
                 if (p.role === "player") {
                     totalPlayers++;
-                    if (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase()) myLives = p.lives;
+                    if (p.lives > 0) {
+                        alivePlayers++;
+                    }
+                    if (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase()) {
+                        myLives = p.lives;
+                    }
                 }
             }
 
             document.getElementById("playerOnlineCount").innerText = `Total Unit: ${totalPlayers}`;
+            document.getElementById("alivePlayersStatus").innerText = `Sisa Pemain: ${alivePlayers}`;
+            
             let hearts = "❤️".repeat(Math.max(0, myLives)) + "🖤".repeat(Math.max(0, 5 - myLives));
             
             if (userRole === 'admin') {
