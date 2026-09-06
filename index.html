@@ -401,6 +401,18 @@
             'left': 6
         };
 
+        // FUNGSI HELPER UNTUK MENDAPATKAN URL WEBSOCKET KE RENDER ATAU LOKAL
+        function getWebSocketURL() {
+            let hostname = window.location.hostname;
+            if (hostname.includes("github.io")) {
+                // Ganti URL di bawah ini dengan URL Web Service Render backend Anda yang sebenarnya!
+                return "wss://NAMA-SERVICE-ANDA.onrender.com";
+            } else {
+                // Jika dijalankan secara lokal (localhost)
+                return "ws://" + hostname + ":8765";
+            }
+        }
+
         document.addEventListener('touchstart', function (e) {
             if (e.touches.length > 1) { e.preventDefault(); }
         }, { passive: false });
@@ -457,9 +469,7 @@
 
         function connectAndFetchRooms() {
             userRole = 'player';
-            let wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            let serverIpPort = window.location.hostname + ":8765";
-            ws = new WebSocket(wsProtocol + serverIpPort);
+            ws = new WebSocket(getWebSocketURL());
 
             ws.onopen = () => {
                 ws.send(JSON.stringify({ type: "get_rooms", name: playerName }));
@@ -542,9 +552,7 @@
             playerName = (userRole === 'admin') ? "Admin Spectator" : customName;
             isHost = (userRole === 'admin' || role === 'player');
 
-            let wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
-            let serverIpPort = window.location.hostname + ":8765";
-            ws = new WebSocket(wsProtocol + serverIpPort);
+            ws = new WebSocket(getWebSocketURL());
 
             ws.onopen = () => {
                 ws.send(JSON.stringify({ type: "login", name: playerName, role: userRole }));
