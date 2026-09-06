@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Web Arena Shooter - Grand Arena</title>
+    <!-- Library QR Code Generator -->
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <style>
+        html, body {
+            touch-action: manipulation;
+            -webkit-text-size-adjust: none;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+        }
+        * { box-sizing: border-box; }
+
+        #mobileControls, #fireBtn, .dpad-btn, #gameCanvas {
+            touch-action: none;
+        }
+
+        body { 
+            background: linear-gradient(rgba(16, 42, 67, 0.75), rgba(16, 42, 67, 0.75)), url('wars.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #f0f4f8; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            text-align: center; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 20px 25px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            max-width: 440px;
+            width: 90%;
+            margin: auto;
+            display: none;
+            max-height: 94vh;
+            overflow-y: auto;
+        }
+        .card h2 { 
+            color: #38bdf8; 
+            margin-top: 0; 
+            font-size: 22px;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        input { 
+            padding: 14px 18px; 
+            font-size: 16px; 
+            border-radius: 12px; 
+            border: 1px solid #334155; 
+            background: #1e293b;
+            color: #f8fafc;
+            width: 100%;
+            margin-bottom: 20px;
+            outline: none;
+            transition: all 0.3s ease;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+        input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        button { 
+            padding: 10px 20px; 
+            font-size: 15px; 
+            font-weight: bold;
+            border-radius: 12px; 
+            border: none;
+            background: linear-gradient(135deg, #22c55e, #16a34a); 
+            color: white; 
+            cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+            width: 100%;
+            margin-top: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5); }
+        button:active { transform: translateY(0); }
+
+        button.secondary { background: linear-gradient(135deg, #0ea5e9, #0284c7); box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); }
+        button.secondary:hover { box-shadow: 0 6px 20px rgba(14, 165, 233, 0.5); }
+
+        button.warning { background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
+        button.warning:hover { box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5); }
+
+        button.danger { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
+        button.danger:hover { box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
+
+        .game-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 95vw;
+            height: 92vh;
+            max-width: 1400px;
+            max-height: 900px;
+            margin: auto;
+            padding: 10px;
+        }
+
+        #gameHeader {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 10px 16px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            font-weight: bold;
+            font-size: 14px;
+            color: #f8fafc;
+        }
+
+        #gameCanvas { 
+            background: #0f172a; 
+            border: 2px solid #38bdf8; 
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 100% !important;
+            height: 100% !important;
+            max-height: 80vh;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+            outline: none;
+        }
+
+        #mobileControls { display: none; }
+
+        @media (max-width: 768px), (pointer: coarse) {
+            .game-container {
+                width: 100vw;
+                height: 100vh;
+                max-width: 100%;
+                max-height: 100%;
+                padding: 5px;
+                justify-content: flex-start;
+            }
+
+            #gameCanvas {
+                max-height: 52vh;
+            }
+
+            #mobileControls {
+                display: flex !important;
+                position: relative;
+                width: 100%;
+                height: 130px;
+                margin-top: 10px;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0 10px;
+            }
+
+            .dpad {
+                position: relative;
+                width: 130px;
+                height: 130px;
+            }
+
+            .dpad-btn {
+                position: absolute;
+                width: 48px;
+                height: 48px;
+                background: rgba(2, 132, 199, 0.9);
+                border: 2px solid #ffffff;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            }
+            .dpad-btn:active, .dpad-btn.active { background: #0369a1; transform: scale(0.95); }
+            
+            .arrow { width: 0; height: 0; border-style: solid; }
+            #btnUp .arrow { border-width: 0 6px 10px 6px; border-color: transparent transparent #ffffff transparent; }
+            #btnDown .arrow { border-width: 10px 6px 0 6px; border-color: #ffffff transparent transparent transparent; }
+            #btnLeft .arrow { border-width: 6px 10px 6px 0; border-color: transparent #ffffff transparent transparent; }
+            #btnRight .arrow { border-width: 6px 0 6px 10px; border-color: transparent transparent transparent #ffffff; }
+
+            #btnUp { top: 0; left: 41px; }
+            #btnLeft { top: 41px; left: 0; }
+            #btnRight { top: 41px; left: 82px; }
+            #btnDown { top: 82px; left: 41px; }
+
+            #fireBtn {
+                position: relative;
+                width: 95px;
+                height: 95px;
+                background: linear-gradient(135deg, #ef4444, #b91c1c);
+                border: 3px solid #fff;
+                color: white;
+                font-weight: bold;
+                font-size: 13px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+            }
+            #fireBtn:active { transform: scale(0.92); background: #991b1b; }
+        }
+
+        .player-list {
+            text-align: left;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 10px;
+            border-radius: 10px;
+            margin: 6px 0;
+            max-height: 90px;
+            overflow-y: auto;
+            font-size: 12px;
+            color: #cbd5e1;
+        }
+        .player-list ul {
+            padding-left: 18px;
+            color: #e2e8f0;
+            margin: 2px 0 0 0;
+        }
+
+        #adminQrSection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin: 6px 0;
+        }
+        #qrcode-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        #qrcode {
+            background: white;
+            padding: 6px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="homeScreen" class="card" style="display: block;">
+        <h2>Grand Arena Shooter</h2>
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Pilih mode masuk permainan di bawah ini</p>
+        <button class="secondary" onclick="connectServer('admin', 'Admin Spectator')">Create Server (As Admin)</button>
+        <button class="warning" onclick="prepareCreatePlayer()">Create Server (As Player)</button>
+        <button onclick="prepareJoinPlayer()">Join Server (As Player)</button>
+    </div>
+
+    <div id="joinScreen" class="card">
+        <h2 id="joinScreenTitle">Gabung Permainan</h2>
+        <p id="joinScreenDesc" style="color: #94a3b8; font-size: 14px; margin-bottom: 15px;">Masukkan Nama Pemain Anda</p>
+        <input type="text" id="playerNameInput" placeholder="Ketik nama panggilan..." autocomplete="off">
+        <button id="joinSubmitBtn" onclick="submitPlayerScreen()">Lanjut</button>
+        <button class="danger" style="margin-top: 8px;" onclick="showScreen('homeScreen')">Kembali</button>
+    </div>
+
+    <div id="roomListScreen" class="card">
+        <h2>Pilih Lobi Aktif</h2>
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 15px;">Pilih lobi permainan yang ingin dimasuki</p>
+        
+        <div class="player-list" style="max-height: 180px;">
+            <ul id="roomListUl" style="padding-left: 0; list-style: none; margin: 0;">
+                <!-- Daftar lobi dimuat dinamis -->
+            </ul>
+        </div>
+
+        <button class="secondary" onclick="refreshRoomList()">Muat Ulang Lobi</button>
+        <button class="danger" style="margin-top: 8px;" onclick="showScreen('homeScreen')">Kembali</button>
+    </div>
+
+    <div id="lobbyScreen" class="card">
+        <h2>Lobby Menunggu</h2>
+        <p id="roomCodeDisplay" style="color: #38bdf8; font-weight: bold; font-size: 13px; margin: 3px 0;">Kode Lobi: -</p>
+        <p id="lobbyStatusText" style="color: #94a3b8; font-size: 11px; margin: 2px 0;">Menunggu pemain lain bergabung...</p>
+        
+        <div id="adminQrSection" style="display: none;">
+            <div id="qrcode-container">
+                <div id="qrcode"></div>
+                <span id="qrTextInfo" style="font-size: 10px; color: #38bdf8; margin-top: 4px; font-weight: bold;"></span>
+                <span style="font-size: 9px; color: #94a3b8; margin-top: 1px;">Scan QR untuk langsung gabung</span>
+            </div>
+        </div>
+
+        <div class="player-list" id="lastMatchSummaryContainer" style="display: none; background: rgba(69, 26, 3, 0.85); border: 1px solid rgba(245, 158, 11, 0.4);">
+            <b style="color: #fbbf24;">🏆 Hasil Pertandingan Terakhir:</b>
+            <p id="lastMatchWinner" style="margin: 2px 0; font-size: 11px; font-weight: bold; color: #4ade80;"></p>
+            <ul id="lastMatchUl" style="margin: 0; font-size: 10px; color: #fef3c7;"></ul>
+        </div>
+
+        <div class="player-list" id="lobbyPlayerList">
+            <b style="color: #38bdf8;">Daftar Pemain:</b>
+            <ul id="lobbyUl"></ul>
+        </div>
+
+        <div id="adminActionArea" style="display: none;">
+            <button class="secondary" id="startBtn" onclick="requestStartGame()">Mulai Permainan</button>
+        </div>
+        <button class="danger" onclick="disconnectAndHome()">Keluar / Batal</button>
+    </div>
+
+    <div class="game-container" id="gameContainer">
+        <div id="gameHeader">
+            <span id="playerOnlineCount">Pemain: 0</span>
+            <span id="myLivesStatus">Nyawa: ❤️❤️❤️❤️❤️  |  Peluru: [8/8]</span>
+        </div>
+
+        <canvas id="gameCanvas" width="1500" height="1000"></canvas>
+        
+        <div id="mobileControls">
+            <div class="dpad">
+                <div class="dpad-btn" id="btnUp"><div class="arrow"></div></div>
+                <div class="dpad-btn" id="btnLeft"><div class="arrow"></div></div>
+                <div class="dpad-btn" id="btnRight"><div class="arrow"></div></div>
+                <div class="dpad-btn" id="btnDown"><div class="arrow"></div></div>
+            </div>
+            <div id="fireBtn">TEMBAK</div>
+        </div>
+    </div>
+
+    <script>
+        let ws;
+        let playerName = "";
+        let userRole = ""; 
+        let actionTargetRole = ""; 
+        let isHost = false;
+        let currentRoomIdCode = "";
+        let x = null, y = null;
+        let angle = -Math.PI / 2; 
+        let currentDirection = 'up'; 
+        let baseSpeed = 250; 
+        let gameState = { game_started: false, clients: {}, bullets: [], obstacles: [], game_over: false, winner: "" };
+        
+        let interpolatedClients = {};
+
+        let keys = {};
+        let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+
+        let previousMyLives = 5;
+        let previousMyKills = 0;
+        let hitEffectTimer = 0;
+        let lastServerLives = null;
+        let lastMatchSummary = null; 
+
+        let isRespawningDelay = false;
+        let respawnTimerEnd = 0;
+        let lastAttackerName = "Pemain Lain";
+        let currentZoom = 1.0;
+
+        let lastTime = performance.now();
+        let ammo = 8;
+        let maxAmmo = 8;
+        let isReloading = false;
+        let audioCtx = null;
+        let qrGenerated = false;
+
+        let planeSprite = new Image();
+        planeSprite.src = "warsplane.png";
+
+        const SPRITE_COLS = 4;
+        const SPRITE_ROWS = 3;
+
+        const DIRECTION_SPRITES = {
+            'up': 3,
+            'down': 4,
+            'right': 5,
+            'left': 6
+        };
+
+        document.addEventListener('touchstart', function (e) {
+            if (e.touches.length > 1) { e.preventDefault(); }
+        }, { passive: false });
+
+        document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            let now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) { event.preventDefault(); }
+            lastTouchEnd = now;
+        }, { passive: false });
+
+        document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById(screenId).style.display = 'block';
+        }
+
+        function prepareCreatePlayer() {
+            actionTargetRole = 'create_player';
+            document.getElementById("joinScreenTitle").innerText = "Buat Server (Sebagai Pemain)";
+            document.getElementById("joinScreenDesc").innerText = "Masukkan nama Anda untuk membuat dan ikut main";
+            document.getElementById("joinSubmitBtn").innerText = "Buat & Masuk Lobi";
+            document.getElementById("playerNameInput").value = "";
+            showScreen('joinScreen');
+        }
+
+        function prepareJoinPlayer() {
+            actionTargetRole = 'join_player';
+            document.getElementById("joinScreenTitle").innerText = "Gabung Permainan";
+            document.getElementById("joinScreenDesc").innerText = "Masukkan Nama Pemain Anda";
+            document.getElementById("joinSubmitBtn").innerText = "Pilih Lobi Aktif";
+            document.getElementById("playerNameInput").value = "";
+            showScreen('joinScreen');
+        }
+
+        function submitPlayerScreen() {
+            let nameInput = document.getElementById("playerNameInput").value.trim();
+            if (!nameInput) return alert("Nama pemain tidak boleh kosong!");
+            
+            playerName = nameInput;
+            isHost = (actionTargetRole === 'create_player');
+            userRole = 'player';
+            
+            if (isHost) {
+                connectServer('player', playerName);
+            } else {
+                connectAndFetchRooms();
+            }
+        }
+
+        function connectAndFetchRooms() {
+            userRole = 'player';
+            let wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            let serverIpPort = window.location.hostname + ":8765";
+            ws = new WebSocket(wsProtocol + serverIpPort);
+
+            ws.onopen = () => {
+                ws.send(JSON.stringify({ type: "get_rooms", name: playerName }));
+                showScreen('roomListScreen');
+            };
+
+            ws.onmessage = (event) => {
+                handleServerMessage(event);
+            };
+
+            ws.onclose = () => disconnectAndHome();
+        }
+
+        function refreshRoomList() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "get_rooms", name: playerName }));
+            } else {
+                connectAndFetchRooms();
+            }
+        }
+
+        function joinSpecificRoom(roomId) {
+            userRole = 'player';
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                currentRoomIdCode = roomId;
+                document.getElementById("roomCodeDisplay").innerText = "Kode Lobi: " + roomId;
+                ws.send(JSON.stringify({ type: "join_room", room_id: roomId, name: playerName, role: "player" }));
+                showScreen('lobbyScreen');
+            }
+        }
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                let osc = audioCtx.createOscillator();
+                let gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                let now = audioCtx.currentTime;
+
+                if (type === "shoot") {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(80, now + 0.1);
+                    gainNode.gain.setValueAtTime(0.15, now);
+                    gainNode.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now); osc.stop(now + 0.1);
+                } else if (type === "hit") {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.linearRampToValueAtTime(40, now + 0.25);
+                    gainNode.gain.setValueAtTime(0.3, now);
+                    gainNode.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now); osc.stop(now + 0.25);
+                } else if (type === "hit_target") {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.15);
+                    gainNode.gain.setValueAtTime(0.25, now);
+                    gainNode.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now); osc.stop(now + 0.15);
+                } else if (type === "reload") {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.linearRampToValueAtTime(600, now + 0.5);
+                    gainNode.gain.setValueAtTime(0.1, now);
+                    gainNode.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now); osc.stop(now + 0.5);
+                }
+            } catch (e) {}
+        }
+
+        function connectServer(role, customName = "") {
+            userRole = (role !== 'admin') ? 'player' : 'admin';
+            playerName = (userRole === 'admin') ? "Admin Spectator" : customName;
+            isHost = (userRole === 'admin' || role === 'player');
+
+            let wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+            let serverIpPort = window.location.hostname + ":8765";
+            ws = new WebSocket(wsProtocol + serverIpPort);
+
+            ws.onopen = () => {
+                ws.send(JSON.stringify({ type: "login", name: playerName, role: userRole }));
+                showScreen('lobbyScreen');
+                
+                if (isHost) {
+                    document.getElementById('adminActionArea').style.display = 'block';
+                    document.getElementById('adminQrSection').style.display = 'flex';
+                    document.getElementById('lobbyStatusText').innerText = userRole === 'admin' ? "Mode Admin (Full Map View)" : "Anda sebagai Host Room (Player)";
+                    
+                    if (!qrGenerated && typeof QRCode !== 'undefined') {
+                        document.getElementById("qrcode").innerHTML = "";
+                        let currentHost = window.location.hostname;
+                        let currentPort = window.location.port ? ":" + window.location.port : "";
+                        let clientShareUrl = window.location.protocol + "//" + currentHost + currentPort + "/";
+                        
+                        new QRCode(document.getElementById("qrcode"), {
+                            text: clientShareUrl,
+                            width: 90,
+                            height: 90,
+                            colorDark: "#0f172a",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                        
+                        document.getElementById("qrTextInfo").innerText = currentHost + currentPort;
+                        qrGenerated = true;
+                    }
+                } else {
+                    document.getElementById('adminActionArea').style.display = 'none';
+                    document.getElementById('adminQrSection').style.display = 'none';
+                    document.getElementById('lobbyStatusText').innerText = "Menunggu Host memulai permainan...";
+                }
+            };
+
+            ws.onmessage = (event) => {
+                handleServerMessage(event);
+            };
+
+            ws.onclose = () => disconnectAndHome();
+        }
+
+        function handleServerMessage(event) {
+            let incomingState = JSON.parse(event.data);
+
+            if (incomingState.type === "room_list") {
+                let ul = document.getElementById("roomListUl");
+                ul.innerHTML = "";
+                let rooms = incomingState.rooms || [];
+                if (rooms.length === 0) {
+                    ul.innerHTML = "<li style='padding: 10px; color: #94a3b8; text-align: center;'>Tidak ada lobi aktif saat ini.</li>";
+                    return;
+                }
+                rooms.forEach(room => {
+                    let li = document.createElement('li');
+                    li.style.display = "flex";
+                    li.style.justifyContent = "space-between";
+                    li.style.alignItems = "center";
+                    li.style.padding = "8px 10px";
+                    li.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+                    li.innerHTML = `<span><b>Lobi:</b> ${room.name} <br><small style="color:#94a3b8;">(${room.playersCount} pemain)</small></span> <button style="width: auto; padding: 6px 14px; margin:0;" onclick="joinSpecificRoom('${room.id}')">Gabung</button>`;
+                    ul.appendChild(li);
+                });
+                return;
+            }
+
+            if (incomingState.room_id) {
+                currentRoomIdCode = incomingState.room_id;
+                document.getElementById("roomCodeDisplay").innerText = "Kode Lobi: " + incomingState.room_id;
+            }
+
+            if (incomingState.game_over && !gameState.game_over) {
+                let players = Object.values(incomingState.clients || {}).filter(p => p.role === "player");
+                players.sort((a, b) => b.kills - a.kills);
+                lastMatchSummary = { winner: incomingState.winner, rankings: players };
+            }
+
+            gameState = incomingState;
+
+            for (let id in gameState.clients) {
+                let p = gameState.clients[id];
+                if (!interpolatedClients[id]) {
+                    interpolatedClients[id] = { x: p.x, y: p.y, direction: p.direction || 'up' };
+                }
+            }
+
+            if (!gameState.game_started) {
+                document.getElementById('gameContainer').style.display = 'none';
+                if (isMobile) document.getElementById('mobileControls').style.display = 'none';
+
+                let activeCard = document.querySelector('.card[style*="display: block"]');
+                if (!activeCard || (activeCard.id !== 'homeScreen' && activeCard.id !== 'joinScreen' && activeCard.id !== 'roomListScreen')) {
+                    showScreen('lobbyScreen');
+                }
+
+                let ul = document.getElementById('lobbyUl');
+                ul.innerHTML = "";
+                let playerCount = 0;
+                for (let id in gameState.clients) {
+                    let p = gameState.clients[id];
+                    if (p.role === 'player') playerCount++;
+                    let li = document.createElement('li');
+                    li.innerText = `${p.name} (${p.role.toUpperCase()})`;
+                    ul.appendChild(li);
+                }
+
+                let summaryContainer = document.getElementById('lastMatchSummaryContainer');
+                if (lastMatchSummary) {
+                    summaryContainer.style.display = 'block';
+                    document.getElementById('lastMatchWinner').innerText = `Pemenang: ${lastMatchSummary.winner}`;
+                    let matchUl = document.getElementById('lastMatchUl');
+                    matchUl.innerHTML = "";
+                    lastMatchSummary.rankings.forEach((p, index) => {
+                        let medal = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : `${index + 1}.`;
+                        let li = document.createElement('li');
+                        li.innerText = `${medal} ${p.name} — ${p.kills} Kill (Sisa Nyawa: ${p.lives})`;
+                        matchUl.appendChild(li);
+                    });
+                } else {
+                    summaryContainer.style.display = 'none';
+                }
+                
+                if (isHost) {
+                    document.getElementById('adminActionArea').style.display = 'block';
+                    document.getElementById('lobbyStatusText').innerText = `Total Player: ${playerCount}. ${playerCount >= 2 ? 'Klik mulai jika siap!' : 'Minimal butuh 2 pemain...'}`;
+                }
+                return;
+            }
+
+            if (gameState.game_started) {
+                if (document.getElementById('gameContainer').style.display !== 'flex') {
+                    document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+                    document.getElementById('gameContainer').style.display = 'flex';
+                    if (isMobile && userRole === 'player') {
+                        document.getElementById('mobileControls').style.display = 'flex';
+                    }
+                }
+            }
+
+            updateGameHeader();
+
+            let myId = null;
+            for (let id in gameState.clients) {
+                let client = gameState.clients[id];
+                if (client.role === "player" && client.name.trim().toLowerCase() === playerName.trim().toLowerCase()) {
+                    myId = id;
+                    break;
+                }
+            }
+            if (!myId) {
+                for (let id in gameState.clients) {
+                    if (gameState.clients[id].role === "player") { myId = id; break; }
+                }
+            }
+
+            if (myId && gameState.clients[myId]) {
+                let currentClient = gameState.clients[myId];
+                let currentMyLives = currentClient.lives;
+                let currentMyKills = currentClient.kills;
+                let serverX = currentClient.x;
+                let serverY = currentClient.y;
+
+                if ((x === null || y === null || isNaN(x)) && serverX !== undefined && serverY !== undefined) {
+                    x = serverX; y = serverY;
+                }
+
+                if (lastServerLives !== null && currentMyLives > lastServerLives) {
+                    x = serverX; y = serverY;
+                }
+                
+                if (currentMyKills > previousMyKills) playSound("hit_target");
+                
+                if (currentMyLives < previousMyLives) {
+                    hitEffectTimer = 15;
+                    playSound("hit");
+                    x = serverX; y = serverY;
+
+                    let foundAttacker = "Pemain Lain";
+                    let minDist = 350; 
+                    
+                    for (let b of (gameState.bullets || [])) {
+                        let dist = Math.hypot(b.x - x, b.y - y);
+                        let bOwnerId = b.owner_id || b.owner || b.clientId; 
+                        
+                        if (dist < minDist && bOwnerId !== myId) {
+                            minDist = dist;
+                            if (bOwnerId && gameState.clients[bOwnerId]) {
+                                foundAttacker = gameState.clients[bOwnerId].name;
+                            }
+                        }
+                    }
+                    
+                    if (foundAttacker === "Pemain Lain") {
+                        let closestEnemyDist = 9999;
+                        for (let id in gameState.clients) {
+                            if (id !== myId && gameState.clients[id].role === "player") {
+                                let enemy = gameState.clients[id];
+                                let d = Math.hypot(enemy.x - x, enemy.y - y);
+                                if (d < closestEnemyDist) {
+                                    closestEnemyDist = d;
+                                    foundAttacker = enemy.name;
+                                }
+                            }
+                        }
+                    }
+
+                    lastAttackerName = foundAttacker;
+                    isRespawningDelay = true;
+                    respawnTimerEnd = Date.now() + 3000;
+                }
+                
+                previousMyLives = currentMyLives;
+                previousMyKills = currentMyKills;
+                lastServerLives = currentMyLives;
+            }
+        }
+
+        function requestStartGame() {
+            let totalPlayers = Object.values(gameState.clients || {}).filter(p => p.role === 'player').length;
+            if (totalPlayers < 2) {
+                alert("Minimal harus ada 2 pemain untuk memulai permainan!");
+                return;
+            }
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "start_game" }));
+            }
+        }
+
+        function disconnectAndHome() {
+            if (ws) ws.close();
+            showScreen('homeScreen');
+            isHost = false;
+            currentRoomIdCode = "";
+            document.getElementById("roomCodeDisplay").innerText = "Kode Lobi: -";
+            x = null; y = null;
+            lastServerLives = null;
+            previousMyLives = 5;
+            previousMyKills = 0;
+            ammo = 8;
+            isReloading = false;
+            qrGenerated = false;
+            lastMatchSummary = null;
+            isRespawningDelay = false;
+        }
+
+        function returnToLogin() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "reset_game" }));
+            }
+            gameState.game_started = false;
+            gameState.game_over = false;
+            showScreen('lobbyScreen');
+            if (isHost) {
+                document.getElementById('adminActionArea').style.display = 'block';
+                document.getElementById('lobbyStatusText').innerText = "Game direset. Silakan mulai ulang.";
+            } else {
+                document.getElementById('adminActionArea').style.display = 'none';
+                document.getElementById('lobbyStatusText').innerText = "Menunggu Host memulai permainan...";
+            }
+            x = null; y = null;
+            lastServerLives = null;
+            previousMyLives = 5;
+            previousMyKills = 0;
+            ammo = 8;
+            isReloading = false;
+            isRespawningDelay = false;
+        }
+
+        function updateGameHeader() {
+            let totalPlayers = 0;
+            let myLives = 5;
+
+            for (let id in gameState.clients) {
+                let p = gameState.clients[id];
+                if (p.role === "player") {
+                    totalPlayers++;
+                    if (p.name.trim().toLowerCase() === playerName.trim().toLowerCase()) myLives = p.lives;
+                }
+            }
+
+            document.getElementById("playerOnlineCount").innerText = `Player: ${totalPlayers}`;
+            let hearts = "❤️".repeat(Math.max(0, myLives)) + "🖤".repeat(Math.max(0, 5 - myLives));
+            
+            if (userRole === 'admin') {
+                document.getElementById("myLivesStatus").innerText = "Mode: Penonton (Full Map Admin)";
+            } else if (isRespawningDelay) {
+                let sLeft = Math.max(0, Math.ceil((respawnTimerEnd - Date.now()) / 1000));
+                document.getElementById("myLivesStatus").innerText = `Respawn dalam ${sLeft} detik... (Full Map View)`;
+            } else {
+                let ammoText = isReloading ? "🔄 Reloading..." : `Peluru: [${ammo}/${maxAmmo}]`;
+                document.getElementById("myLivesStatus").innerText = `Nyawa: ${hearts}  |  ${ammoText}`;
+            }
+        }
+
+        function checkLineCollisionClient(px, py, radius, line) {
+            let x1 = line.x1, y1 = line.y1, x2 = line.x2, y2 = line.y2;
+            let dx = x2 - x1, dy = y2 - y1;
+            let length_sq = dx*dx + dy*dy;
+            if (length_sq === 0) return ((px - x1)**2 + (py - y1)**2)**0.5 < radius;
+            let t = ((px - x1) * dx + (py - y1) * dy) / length_sq;
+            t = Math.max(0, Math.min(1, t));
+            let nearest_x = x1 + t * dx;
+            let nearest_y = y1 + t * dy;
+            return ((px - nearest_x)**2 + (py - nearest_y)**2) < (radius**2);
+        }
+
+        window.addEventListener("keydown", (e) => { 
+            let k = e.key.toLowerCase();
+            keys[k] = true; 
+            keys[e.code] = true; 
+            
+            if ((e.code === "Space" || k === " ") && userRole === 'player' && gameState.game_started && !isRespawningDelay) {
+                e.preventDefault();
+                triggerShoot();
+            }
+        });
+        window.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; keys[e.code] = false; });
+
+        let canvas = document.getElementById("gameCanvas");
+        if (!isMobile) {
+            canvas.addEventListener("mousedown", (e) => {
+                if (gameState.game_over) {
+                    let rect = canvas.getBoundingClientRect();
+                    let mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+                    let mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+                    let btnX = canvas.width / 2 - 150;
+                    let btnY = canvas.height / 2 + 190;
+                    if (mouseX >= btnX && mouseX <= btnX + 300 && mouseY >= btnY && mouseY <= btnY + 60) {
+                        returnToLogin();
+                    }
+                    return;
+                }
+                if (userRole === 'player' && e.button === 0 && !isRespawningDelay) triggerShoot();
+            });
+        } else {
+            const bindTouch = (id, keyName) => {
+                const el = document.getElementById(id);
+                el.addEventListener("touchstart", (e) => {
+                    e.preventDefault();
+                    keys[keyName] = true; keys[keyName.toUpperCase()] = true; keys["Key" + keyName.toUpperCase()] = true;
+                    el.classList.add("active"); 
+                }, { passive: false });
+
+                const releaseTouch = (e) => {
+                    e.preventDefault();
+                    keys[keyName] = false; keys[keyName.toUpperCase()] = false; keys["Key" + keyName.toUpperCase()] = false;
+                    el.classList.remove("active");
+                };
+                el.addEventListener("touchend", releaseTouch, { passive: false });
+                el.addEventListener("touchcancel", releaseTouch, { passive: false });
+            };
+
+            bindTouch("btnUp", "w");
+            bindTouch("btnLeft", "a");
+            bindTouch("btnRight", "d");
+            bindTouch("btnDown", "s");
+
+            document.getElementById("fireBtn").addEventListener("touchstart", (e) => {
+                e.preventDefault();
+                if (gameState.game_over) { returnToLogin(); return; }
+                if (!isRespawningDelay) triggerShoot();
+            }, { passive: false });
+        }
+
+        function triggerShoot() {
+            if (isReloading || ammo <= 0 || userRole !== 'player' || isRespawningDelay) return;
+
+            if (currentDirection === 'up') {
+                angle = -Math.PI / 2;
+            } else if (currentDirection === 'down') {
+                angle = Math.PI / 2;
+            } else if (currentDirection === 'left') {
+                angle = Math.PI;
+            } else if (currentDirection === 'right') {
+                angle = 0;
+            }
+
+            let dx = Math.cos(angle);
+            let dy = Math.sin(angle);
+            let spawnX = x + dx * 20;
+            let spawnY = y + dy * 20;
+
+            for (let obs of gameState.obstacles) {
+                if (checkLineCollisionClient(spawnX, spawnY, 4, obs)) return;
+            }
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "shoot", x: spawnX, y: spawnY, dx: dx, dy: dy }));
+                playSound("shoot");
+                ammo--;
+                updateGameHeader();
+
+                if (ammo <= 0) {
+                    isReloading = true;
+                    playSound("reload");
+                    setTimeout(() => {
+                        ammo = maxAmmo;
+                        isReloading = false;
+                        updateGameHeader();
+                    }, 1000);
+                }
+            }
+        }
+
+        function update(deltaTime) {
+            if (isRespawningDelay && Date.now() >= respawnTimerEnd) {
+                isRespawningDelay = false;
+            }
+
+            if (userRole === 'player' && gameState.game_started && !gameState.game_over && x !== null && y !== null && !isRespawningDelay) {
+                let nextX = x, nextY = y;
+                let currentSpeed = baseSpeed * deltaTime;
+
+                if (keys["w"] || keys["W"] || keys["KeyW"]) { 
+                    nextY -= currentSpeed; 
+                    currentDirection = 'up';
+                    angle = -Math.PI / 2;
+                }
+                if (keys["s"] || keys["S"] || keys["KeyS"]) { 
+                    nextY += currentSpeed; 
+                    currentDirection = 'down';
+                    angle = Math.PI / 2;
+                }
+                if (keys["a"] || keys["A"] || keys["KeyA"]) { 
+                    nextX -= currentSpeed; 
+                    currentDirection = 'left';
+                    angle = Math.PI;
+                }
+                if (keys["d"] || keys["D"] || keys["KeyD"]) { 
+                    nextX += currentSpeed; 
+                    currentDirection = 'right';
+                    angle = 0;
+                }
+
+                nextX = Math.max(20, Math.min(1200 - 20, nextX));
+                nextY = Math.max(20, Math.min(800 - 20, nextY));
+
+                let hit = gameState.obstacles.some(obs => checkLineCollisionClient(nextX, nextY, 18, obs));
+                if (!hit) {
+                    x = nextX; y = nextY;
+                } else {
+                    if (!gameState.obstacles.some(obs => checkLineCollisionClient(nextX, y, 18, obs))) x = nextX;
+                    if (!gameState.obstacles.some(obs => checkLineCollisionClient(x, nextY, 18, obs))) y = nextY;
+                }
+
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: "update", x: x, y: y, angle: angle, direction: currentDirection }));
+                }
+            }
+
+            for (let id in gameState.clients) {
+                let p = gameState.clients[id];
+                let isMe = (p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
+                
+                if (!isMe) {
+                    if (!interpolatedClients[id]) {
+                        interpolatedClients[id] = { x: p.x, y: p.y, direction: p.direction || 'up' };
+                    } else {
+                        interpolatedClients[id].x += (p.x - interpolatedClients[id].x) * 0.25;
+                        interpolatedClients[id].y += (p.y - interpolatedClients[id].y) * 0.25;
+                        if (p.direction) {
+                            interpolatedClients[id].direction = p.direction;
+                        }
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            let ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.save();
+
+            let isPlayerRole = (userRole === 'player' && gameState.game_started && !gameState.game_over);
+            let targetZoom = (isPlayerRole && !isRespawningDelay) ? 2.5 : 1.0;
+            currentZoom += (targetZoom - currentZoom) * 0.1;
+
+            if (isPlayerRole) {
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.scale(currentZoom, currentZoom);
+                
+                let targetCamX = isRespawningDelay ? 600 : x;
+                let targetCamY = isRespawningDelay ? 400 : y;
+                ctx.translate(-targetCamX, -targetCamY);
+            }
+
+            if (hitEffectTimer > 0) {
+                canvas.style.borderColor = "#ef4444";
+                canvas.style.boxShadow = "0 0 25px rgba(239, 68, 68, 0.8)";
+                hitEffectTimer--;
+            } else {
+                canvas.style.borderColor = "#38bdf8";
+                canvas.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.5)";
+            }
+
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.04)"; ctx.lineWidth = 1;
+            for (let i = 0; i < 1200; i += 40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 800); ctx.stroke(); }
+            for (let j = 0; j < 800; j += 40) { ctx.beginPath(); ctx.moveTo(0, j); ctx.lineTo(1200, j); ctx.stroke(); }
+
+            ctx.strokeStyle = "#020617"; ctx.lineWidth = 14; ctx.strokeRect(0, 0, 1200, 800);
+            ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 4; ctx.strokeRect(0, 0, 1200, 800);
+
+            ctx.strokeStyle = "#64748b"; ctx.lineWidth = 12; ctx.shadowBlur = 6; ctx.shadowColor = "rgba(0,0,0,0.5)";
+            (gameState.obstacles || []).forEach(obs => { ctx.beginPath(); ctx.moveTo(obs.x1, obs.y1); ctx.lineTo(obs.x2, obs.y2); ctx.stroke(); });
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = "#fbbf24"; ctx.shadowBlur = 6; ctx.shadowColor = "#f59e0b";
+            (gameState.bullets || []).forEach(b => { ctx.beginPath(); ctx.arc(b.x, b.y, 5, 0, Math.PI * 2); ctx.fill(); });
+            ctx.shadowBlur = 0;
+
+            for (let id in gameState.clients) {
+                let p = gameState.clients[id];
+                if (p.role === "player" && p.lives > 0) {
+                    let isMe = p.name.trim().toLowerCase() === playerName.trim().toLowerCase();
+                    
+                    if (isMe && isRespawningDelay) {
+                        continue; 
+                    }
+
+                    ctx.save();
+                    
+                    let renderX = isMe ? x : (interpolatedClients[id] ? interpolatedClients[id].x : p.x);
+                    let renderY = isMe ? y : (interpolatedClients[id] ? interpolatedClients[id].y : p.y);
+                    let pDir = isMe ? currentDirection : (interpolatedClients[id] ? interpolatedClients[id].direction : (p.direction || 'up'));
+
+                    ctx.translate(renderX, renderY);
+
+                    if (p.is_invulnerable) {
+                        ctx.globalAlpha = (Math.floor(Date.now() / 80) % 2 === 0) ? 0.25 : 1.0;
+                    }
+
+                    let frameIndex = DIRECTION_SPRITES[pDir] !== undefined ? DIRECTION_SPRITES[pDir] : 3;
+                    let sheetW = planeSprite.width || 800;
+                    let sheetH = planeSprite.height || 600;
+                    let sW = sheetW / SPRITE_COLS;
+                    let sH = sheetH / SPRITE_ROWS;
+                    
+                    let col = frameIndex % SPRITE_COLS;
+                    let row = Math.floor(frameIndex / SPRITE_COLS);
+                    let sX = col * sW;
+                    let sY = row * sH;
+
+                    let renderW = 36, renderH = 26;
+
+                    let offscreen = document.createElement('canvas');
+                    offscreen.width = sW;
+                    offscreen.height = sH;
+                    let oCtx = offscreen.getContext('2d');
+
+                    oCtx.drawImage(planeSprite, sX, sY, sW, sH, 0, 0, sW, sH);
+                    oCtx.globalCompositeOperation = 'source-in';
+                    oCtx.fillStyle = p.color;
+                    oCtx.fillRect(0, 0, sW, sH);
+
+                    ctx.drawImage(offscreen, -renderW / 2, -renderH / 2, renderW, renderH);
+
+                    ctx.restore();
+
+                    if (isMe && userRole === 'player') {
+                        ctx.strokeStyle = "#38bdf8"; ctx.lineWidth = 3;
+                        ctx.beginPath(); ctx.arc(renderX, renderY, 24, 0, Math.PI * 2); ctx.stroke();
+                    }
+
+                    ctx.fillStyle = "#f8fafc"; ctx.font = "bold 11px 'Segoe UI', sans-serif"; ctx.textAlign = "center";
+                    ctx.fillText(`${p.name} (❤️${p.lives} | 🎯${p.kills})`, renderX, renderY + 35);
+                }
+            }
+
+            ctx.restore(); 
+
+            if (isRespawningDelay && userRole === 'player' && gameState.game_started && !gameState.game_over) {
+                ctx.save();
+                let sLeft = Math.max(0, Math.ceil((respawnTimerEnd - Date.now()) / 1000));
+                ctx.fillStyle = "rgba(15, 23, 42, 0.75)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = "#ef4444"; ctx.font = "bold 30px 'Segoe UI', sans-serif"; ctx.textAlign = "center";
+                ctx.fillText(`ANDA DITEMBAK OLEH ${lastAttackerName.toUpperCase()}!`, canvas.width / 2, canvas.height / 2 - 35);
+                
+                ctx.fillStyle = "#38bdf8"; ctx.font = "bold 24px 'Segoe UI', sans-serif";
+                ctx.fillText(`Respawn dalam: ${sLeft} detik`, canvas.width / 2, canvas.height / 2 + 15);
+                ctx.restore();
+            }
+
+            if (gameState.game_over) {
+                ctx.save();
+                let overlayW = canvas.width;
+                let overlayH = canvas.height;
+
+                ctx.fillStyle = "rgba(15, 23, 42, 0.96)";
+                ctx.fillRect(0, 0, overlayW, overlayH);
+
+                let centerX = overlayW / 2;
+                let centerY = overlayH / 2;
+
+                ctx.fillStyle = "#ef4444"; ctx.font = "bold 44px 'Segoe UI', sans-serif"; ctx.textAlign = "center";
+                ctx.fillText(`PERMAINAN SELESAI`, centerX, centerY - 210);
+
+                ctx.fillStyle = "#4ade80"; ctx.font = "bold 26px 'Segoe UI', sans-serif";
+                ctx.fillText(`Juara 1: ${gameState.winner}`, centerX, centerY - 155);
+
+                ctx.fillStyle = "#f8fafc"; ctx.font = "bold 20px 'Segoe UI', sans-serif";
+                ctx.fillText("--- PODIUM & SKOR PERTANDINGAN ---", centerX, centerY - 105);
+
+                let startY = centerY - 65;
+                ctx.font = "bold 20px 'Segoe UI', sans-serif";
+
+                let listToDisplay = lastMatchSummary ? lastMatchSummary.rankings : Object.values(gameState.clients || {}).filter(p => p.role === "player").sort((a,b)=>b.kills-a.kills);
+
+                listToDisplay.forEach((p, index) => {
+                    let medal = index === 0 ? "🥇 1st: " : index === 1 ? "🥈 2nd: " : index === 2 ? "🥉 3rd: " : `${index + 1}. `;
+                    ctx.fillText(`${medal}${p.name}   ---   ${p.kills} Kill (Sisa Nyawa: ${p.lives})`, centerX, startY);
+                    startY += 34; 
+                });
+
+                ctx.fillStyle = "#0284c7";
+                ctx.beginPath();
+                let btnX = centerX - 150, btnY = centerY + 190;
+                if (ctx.roundRect) ctx.roundRect(btnX, btnY, 300, 60, 14); else ctx.rect(btnX, btnY, 300, 60);
+                ctx.fill();
+
+                ctx.fillStyle = "#ffffff"; ctx.font = "bold 20px 'Segoe UI', sans-serif";
+                ctx.fillText("KEMBALI KE LOBBY", centerX, btnY + 38);
+                ctx.restore();
+            }
+        }
+
+        function gameLoop(currentTime) {
+            let deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+            if (deltaTime > 0.1) deltaTime = 0.1;
+
+            update(deltaTime);
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
