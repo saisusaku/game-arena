@@ -61,7 +61,7 @@
             margin-bottom: 8px;
         }
 
-        input { 
+        input[type="text"] { 
             padding: 14px 18px; 
             font-size: 16px; 
             border-radius: 12px; 
@@ -75,7 +75,7 @@
             -webkit-user-select: text;
             user-select: text;
         }
-        input:focus {
+        input[type="text"]:focus {
             border-color: #38bdf8;
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
         }
@@ -176,7 +176,6 @@
                 padding: 0 20px;
             }
 
-            /* Styling Analog Stick */
             #analogArea {
                 position: relative;
                 width: 120px;
@@ -263,6 +262,19 @@
             justify-content: center;
             align-items: center;
         }
+        .bot-toggle-box {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #38bdf8;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -288,9 +300,7 @@
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 15px;">Pilih lobi permainan yang ingin dimasuki</p>
         
         <div class="player-list" style="max-height: 180px;">
-            <ul id="roomListUl" style="padding-left: 0; list-style: none; margin: 0;">
-                <!-- Daftar lobi dimuat dinamis -->
-            </ul>
+            <ul id="roomListUl" style="padding-left: 0; list-style: none; margin: 0;"></ul>
         </div>
 
         <button class="secondary" onclick="refreshRoomList()">Muat Ulang Lobi</button>
@@ -308,6 +318,12 @@
                 <span id="qrTextInfo" style="font-size: 10px; color: #38bdf8; margin-top: 4px; font-weight: bold;"></span>
                 <span style="font-size: 9px; color: #94a3b8; margin-top: 1px;">Scan QR untuk langsung gabung</span>
             </div>
+        </div>
+
+        <!-- Pengaturan Bot Khusus Host -->
+        <div id="hostBotControl" class="bot-toggle-box" style="display: none;">
+            <span>🤖 Masukkan AI Bot Lawan:</span>
+            <input type="checkbox" id="botCheckbox" onchange="toggleBotsSetting()" style="width: 20px; height: 20px; margin: 0; cursor: pointer;">
         </div>
 
         <div class="player-list" id="lastMatchSummaryContainer" style="display: none; background: rgba(69, 26, 3, 0.85); border: 1px solid rgba(245, 158, 11, 0.4);">
@@ -345,7 +361,6 @@
 
         <canvas id="gameCanvas" width="1500" height="1000"></canvas>
         
-        <!-- Kontrol Analog HP -->
         <div id="mobileControls">
             <div id="analogArea">
                 <div id="analogStick"></div>
@@ -365,13 +380,12 @@
         let angle = -Math.PI / 2; 
         let currentDirection = 'up'; 
         let baseSpeed = 250; 
-        let gameState = { game_started: false, clients: {}, bullets: [], obstacles: [], game_over: false, winner: "" };
+        let gameState = { game_started: false, clients: {}, bullets: [], obstacles: [], game_over: false, winner: "", use_bots: false };
         
         let interpolatedClients = {};
         let keys = {};
         let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
-        // State Analog Touch
         let analogActive = false;
         let analogTouchId = null;
         let analogVector = { x: 0, y: 0 };
@@ -501,6 +515,13 @@
             }
         }
 
+        function toggleBotsSetting() {
+            let useBots = document.getElementById("botCheckbox").checked;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: "toggle_bots", use_bots: useBots }));
+            }
+        }
+
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
@@ -561,6 +582,7 @@
                 if (isHost) {
                     document.getElementById('adminActionArea').style.display = 'block';
                     document.getElementById('adminQrSection').style.display = 'flex';
+                    document.getElementById('hostBotControl').style.display = 'flex';
                     document.getElementById('lobbyStatusText').innerText = userRole === 'admin' ? "Mode Admin (Full Map View)" : "Anda sebagai Host Room (Player)";
                     
                     if (!qrGenerated && typeof QRCode !== 'undefined') {
@@ -584,6 +606,7 @@
                 } else {
                     document.getElementById('adminActionArea').style.display = 'none';
                     document.getElementById('adminQrSection').style.display = 'none';
+                    document.getElementById('hostBotControl').style.display = 'none';
                     document.getElementById('lobbyStatusText').innerText = "Menunggu Host memulai permainan...";
                 }
             };
@@ -627,13 +650,14 @@
                     return;
                 }
                 rooms.forEach(room => {
+                    let botLabel = room.use_bots ? " 🤖 [Dengan Bot]" : "";
                     let li = document.createElement('li');
                     li.style.display = "flex";
                     li.style.justifyContent = "space-between";
                     li.style.alignItems = "center";
                     li.style.padding = "8px 10px";
                     li.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
-                    li.innerHTML = `<span><b>Lobi:</b> ${room.name} <br><small style="color:#94a3b8;">(${room.playersCount} pemain)</small></span> <button style="width: auto; padding: 6px 14px; margin:0;" onclick="joinSpecificRoom('${room.id}')">Gabung</button>`;
+                    li.innerHTML = `<span><b>Lobi:</b> ${room.name}${botLabel} <br><small style="color:#94a3b8;">(${room.playersCount} pemain)</small></span> <button style="width: auto; padding: 6px 14px; margin:0;" onclick="joinSpecificRoom('${room.id}')">Gabung</button>`;
                     ul.appendChild(li);
                 });
                 return;
@@ -642,6 +666,10 @@
             if (incomingState.room_id) {
                 currentRoomIdCode = incomingState.room_id;
                 document.getElementById("roomCodeDisplay").innerText = "Kode Lobi: " + incomingState.room_id;
+            }
+
+            if (incomingState.use_bots !== undefined) {
+                document.getElementById("botCheckbox").checked = incomingState.use_bots;
             }
 
             if (incomingState.game_over && !gameState.game_over) {
@@ -675,7 +703,8 @@
                     let p = gameState.clients[id];
                     if (p.role === 'player') playerCount++;
                     let li = document.createElement('li');
-                    li.innerText = `${p.name} (${p.role.toUpperCase()})`;
+                    let botBadge = p.is_bot ? " 🤖 [AI Bot]" : "";
+                    li.innerText = `${p.name}${botBadge} (${p.role.toUpperCase()})`;
                     ul.appendChild(li);
                 }
 
@@ -697,7 +726,7 @@
                 
                 if (isHost) {
                     document.getElementById('adminActionArea').style.display = 'block';
-                    document.getElementById('lobbyStatusText').innerText = `Total Player: ${playerCount}. ${playerCount >= 2 ? 'Klik mulai jika siap!' : 'Minimal butuh 2 pemain...'}`;
+                    document.getElementById('lobbyStatusText').innerText = `Total Player: ${playerCount}. ${playerCount >= 1 || gameState.use_bots ? 'Klik mulai jika siap!' : 'Minimal butuh pemain/bot...'}`;
                 }
                 return;
             }
@@ -717,14 +746,14 @@
             let myId = null;
             for (let id in gameState.clients) {
                 let client = gameState.clients[id];
-                if (client.role === "player" && client.name.trim().toLowerCase() === playerName.trim().toLowerCase()) {
+                if (client.role === "player" && !client.is_bot && client.name.trim().toLowerCase() === playerName.trim().toLowerCase()) {
                     myId = id;
                     break;
                 }
             }
             if (!myId) {
                 for (let id in gameState.clients) {
-                    if (gameState.clients[id].role === "player") { myId = id; break; }
+                    if (gameState.clients[id].role === "player" && !gameState.clients[id].is_bot) { myId = id; break; }
                 }
             }
 
@@ -778,8 +807,8 @@
 
         function requestStartGame() {
             let totalPlayers = Object.values(gameState.clients || {}).filter(p => p.role === 'player').length;
-            if (totalPlayers < 2) {
-                alert("Minimal harus ada 2 pemain untuk memulai permainan!");
+            if (totalPlayers < 1 && !gameState.use_bots) {
+                alert("Minimal harus ada pemain atau aktifkan bot!");
                 return;
             }
             if (ws && ws.readyState === WebSocket.OPEN) {
@@ -835,18 +864,18 @@
                 let p = gameState.clients[id];
                 if (p.role === "player") {
                     totalPlayers++;
-                    if (p.name.trim().toLowerCase() === playerName.trim().toLowerCase()) myLives = p.lives;
+                    if (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase()) myLives = p.lives;
                 }
             }
 
-            document.getElementById("playerOnlineCount").innerText = `Player: ${totalPlayers}`;
+            document.getElementById("playerOnlineCount").innerText = `Total Unit: ${totalPlayers}`;
             let hearts = "❤️".repeat(Math.max(0, myLives)) + "🖤".repeat(Math.max(0, 5 - myLives));
             
             if (userRole === 'admin') {
                 document.getElementById("myLivesStatus").innerText = "Mode: Penonton (Full Map Admin)";
             } else if (isRespawningDelay) {
                 let sLeft = Math.max(0, Math.ceil((respawnTimerEnd - Date.now()) / 1000));
-                document.getElementById("myLivesStatus").innerText = `Respawn dalam ${sLeft} detik... (Full Map View)`;
+                document.getElementById("myLivesStatus").innerText = `Respawn dalam ${sLeft} detik...`;
             } else {
                 let ammoText = isReloading ? "🔄 Reloading..." : `Peluru: [${ammo}/${maxAmmo}]`;
                 document.getElementById("myLivesStatus").innerText = `Nyawa: ${hearts}  |  ${ammoText}`;
@@ -865,7 +894,6 @@
             return ((px - nearest_x)**2 + (py - nearest_y)**2) < (radius**2);
         }
 
-        // --- Event Listener Keyboard Desktop ---
         window.addEventListener("keydown", (e) => { 
             let k = e.key.toLowerCase();
             keys[k] = true; 
@@ -895,7 +923,6 @@
                 if (userRole === 'player' && e.button === 0 && !isRespawningDelay) triggerShoot();
             });
         } else {
-            // --- Logika Touch Untuk Analog & Tombol Tembak ---
             const analogArea = document.getElementById('analogArea');
             const analogStick = document.getElementById('analogStick');
 
@@ -941,7 +968,7 @@
                 let dx = touch.clientX - centerX;
                 let dy = touch.clientY - centerY;
                 let distance = Math.hypot(dx, dy);
-                let maxRadius = 35; // Batas geser stick dalam lingkaran
+                let maxRadius = 35;
 
                 if (distance > maxRadius) {
                     dx = (dx / distance) * maxRadius;
@@ -949,8 +976,6 @@
                 }
 
                 analogStick.style.transform = `translate(${dx}px, ${dy}px)`;
-                
-                // Normalisasi arah vektor (skala -1 sampai 1)
                 analogVector.x = dx / maxRadius;
                 analogVector.y = dy / maxRadius;
             }
@@ -965,15 +990,10 @@
         function triggerShoot() {
             if (isReloading || ammo <= 0 || userRole !== 'player' || isRespawningDelay) return;
 
-            if (currentDirection === 'up') {
-                angle = -Math.PI / 2;
-            } else if (currentDirection === 'down') {
-                angle = Math.PI / 2;
-            } else if (currentDirection === 'left') {
-                angle = Math.PI;
-            } else if (currentDirection === 'right') {
-                angle = 0;
-            }
+            if (currentDirection === 'up') angle = -Math.PI / 2;
+            else if (currentDirection === 'down') angle = Math.PI / 2;
+            else if (currentDirection === 'left') angle = Math.PI;
+            else if (currentDirection === 'right') angle = 0;
 
             let dx = Math.cos(angle);
             let dy = Math.sin(angle);
@@ -1012,7 +1032,6 @@
                 let currentSpeed = baseSpeed * deltaTime;
 
                 if (isMobile && analogActive) {
-                    // Pergerakan berbasis Analog Mobile
                     nextX += analogVector.x * currentSpeed;
                     nextY += analogVector.y * currentSpeed;
 
@@ -1023,19 +1042,10 @@
                     }
                     angle = Math.atan2(analogVector.y, analogVector.x);
                 } else {
-                    // Pergerakan berbasis Keyboard Desktop
-                    if (keys["w"] || keys["W"] || keys["KeyW"]) { 
-                        nextY -= currentSpeed; currentDirection = 'up'; angle = -Math.PI / 2;
-                    }
-                    if (keys["s"] || keys["S"] || keys["KeyS"]) { 
-                        nextY += currentSpeed; currentDirection = 'down'; angle = Math.PI / 2;
-                    }
-                    if (keys["a"] || keys["A"] || keys["KeyA"]) { 
-                        nextX -= currentSpeed; currentDirection = 'left'; angle = Math.PI;
-                    }
-                    if (keys["d"] || keys["D"] || keys["KeyD"]) { 
-                        nextX += currentSpeed; currentDirection = 'right'; angle = 0;
-                    }
+                    if (keys["w"] || keys["W"] || keys["KeyW"]) { nextY -= currentSpeed; currentDirection = 'up'; angle = -Math.PI / 2; }
+                    if (keys["s"] || keys["S"] || keys["KeyS"]) { nextY += currentSpeed; currentDirection = 'down'; angle = Math.PI / 2; }
+                    if (keys["a"] || keys["A"] || keys["KeyA"]) { nextX -= currentSpeed; currentDirection = 'left'; angle = Math.PI; }
+                    if (keys["d"] || keys["D"] || keys["KeyD"]) { nextX += currentSpeed; currentDirection = 'right'; angle = 0; }
                 }
 
                 nextX = Math.max(20, Math.min(1200 - 20, nextX));
@@ -1056,7 +1066,7 @@
 
             for (let id in gameState.clients) {
                 let p = gameState.clients[id];
-                let isMe = (p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
+                let isMe = (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
                 
                 if (!isMe) {
                     if (!interpolatedClients[id]) {
@@ -1064,9 +1074,7 @@
                     } else {
                         interpolatedClients[id].x += (p.x - interpolatedClients[id].x) * 0.25;
                         interpolatedClients[id].y += (p.y - interpolatedClients[id].y) * 0.25;
-                        if (p.direction) {
-                            interpolatedClients[id].direction = p.direction;
-                        }
+                        if (p.direction) interpolatedClients[id].direction = p.direction;
                     }
                 }
             }
@@ -1118,8 +1126,7 @@
             for (let id in gameState.clients) {
                 let p = gameState.clients[id];
                 if (p.role === "player" && p.lives > 0) {
-                    let isMe = p.name.trim().toLowerCase() === playerName.trim().toLowerCase();
-                    
+                    let isMe = (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
                     if (isMe && isRespawningDelay) continue;
 
                     ctx.save();
@@ -1146,7 +1153,6 @@
                     let sY = row * sH;
 
                     let renderW = 36, renderH = 26;
-
                     let offscreen = document.createElement('canvas');
                     offscreen.width = sW;
                     offscreen.height = sH;
@@ -1158,7 +1164,6 @@
                     oCtx.fillRect(0, 0, sW, sH);
 
                     ctx.drawImage(offscreen, -renderW / 2, -renderH / 2, renderW, renderH);
-
                     ctx.restore();
 
                     if (isMe && userRole === 'player') {
