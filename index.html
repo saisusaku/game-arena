@@ -16,6 +16,7 @@
             width: 100vw;
             height: 100vh;
             position: fixed;
+            background: #0b1329;
         }
         * { box-sizing: border-box; }
 
@@ -106,49 +107,51 @@
         button.danger { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
         button.danger:hover { box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
 
-        /* Fullscreen Game Container Optimization */
+        /* Fullscreen Game Container Optimization yang Benar & Presisi */
         .game-container {
             display: none;
             flex-direction: column;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             width: 100vw;
             height: 100vh;
-            max-width: 100vw;
-            max-height: 100vh;
             margin: 0;
-            padding: 8px;
+            padding: 6px;
             background: #0b1329;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         #gameHeader {
             width: 100%;
+            max-width: 1200px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: rgba(15, 23, 42, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            padding: 8px 14px;
-            border-radius: 10px;
+            padding: 6px 14px;
+            border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             font-weight: bold;
             font-size: 13px;
             color: #f8fafc;
+            margin-bottom: 6px;
             flex-shrink: 0;
         }
 
         #gameCanvas { 
             background: #0f172a; 
             border: 2px solid #38bdf8; 
-            border-radius: 12px;
+            border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             width: 100% !important;
             height: auto !important;
-            flex-grow: 1;
-            max-height: calc(100vh - 120px);
+            max-width: 1200px;
+            max-height: calc(100vh - 85px);
             object-fit: contain;
             display: block;
-            margin: auto;
             outline: none;
         }
 
@@ -156,21 +159,21 @@
 
         @media (max-width: 768px), (pointer: coarse) {
             .game-container {
-                width: 100vw;
-                height: 100vh;
-                padding: 4px;
                 justify-content: space-between;
+                padding: 4px;
             }
-
+            #gameHeader {
+                max-width: 100%;
+            }
             #gameCanvas {
-                max-height: calc(100vh - 165px);
+                max-width: 100%;
+                max-height: calc(100vh - 145px);
             }
-
             #mobileControls {
                 display: flex !important;
                 position: relative;
                 width: 100%;
-                height: 120px;
+                height: 110px;
                 justify-content: space-between;
                 align-items: center;
                 padding: 0 15px;
@@ -179,20 +182,19 @@
 
             #analogArea {
                 position: relative;
-                width: 105px;
-                height: 105px;
+                width: 95px;
+                height: 95px;
                 background: rgba(255, 255, 255, 0.08);
                 border: 2px solid rgba(255, 255, 255, 0.25);
                 border-radius: 50%;
-                touch-action: none;
             }
 
             #analogStick {
                 position: absolute;
-                top: 27px;
-                left: 27px;
-                width: 47px;
-                height: 47px;
+                top: 24px;
+                left: 24px;
+                width: 43px;
+                height: 43px;
                 background: rgba(2, 132, 199, 0.9);
                 border: 2px solid #ffffff;
                 border-radius: 50%;
@@ -202,21 +204,19 @@
 
             #fireBtn {
                 position: relative;
-                width: 85px;
-                height: 85px;
+                width: 75px;
+                height: 75px;
                 background: linear-gradient(135deg, #ef4444, #b91c1c);
                 border: 3px solid #fff;
                 color: white;
                 font-weight: bold;
-                font-size: 12px;
+                font-size: 11px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
-                touch-action: none;
             }
-            #fireBtn:active { transform: scale(0.92); background: #991b1b; }
         }
 
         .player-list {
@@ -391,7 +391,7 @@
             <button class="secondary" onclick="toggleFullScreen()" style="width: auto; margin: 0; padding: 4px 10px; font-size: 11px;">🖵 Fullscreen</button>
         </div>
 
-        <canvas id="gameCanvas" width="1500" height="1000"></canvas>
+        <canvas id="gameCanvas" width="1200" height="800"></canvas>
         
         <div id="mobileControls">
             <div id="analogArea">
@@ -462,7 +462,6 @@
             }
         }
 
-        // Fungsi Tombol Fullscreen Otomatis (Support HP & Laptop)
         function toggleFullScreen() {
             if (!document.fullscreenElement) {
                 document.documentElement.requestFullscreen().catch(err => {
@@ -1061,7 +1060,7 @@
                 let dx = touch.clientX - centerX;
                 let dy = touch.clientY - centerY;
                 let distance = Math.hypot(dx, dy);
-                let maxRadius = 35;
+                let maxRadius = 32;
 
                 if (distance > maxRadius) {
                     dx = (dx / distance) * maxRadius;
@@ -1179,18 +1178,14 @@
 
             ctx.save();
 
-            // PERBAIKAN UTAMA ADMIN: Cek role, jika admin targetZoom 1.0 (Full Map), jika player 2.5
             let isPlayerRole = (userRole === 'player' && gameState.game_started && !gameState.game_over);
-            let targetZoom = (isPlayerRole && !isRespawningDelay) ? 2.5 : 1.0;
+            let targetZoom = (isPlayerRole && !isRespawningDelay) ? 2.2 : 1.0;
             currentZoom += (targetZoom - currentZoom) * 0.1;
 
-            if (isPlayerRole) {
+            if (isPlayerRole && !isRespawningDelay) {
                 ctx.translate(canvas.width / 2, canvas.height / 2);
                 ctx.scale(currentZoom, currentZoom);
-                
-                let targetCamX = isRespawningDelay ? 600 : x;
-                let targetCamY = isRespawningDelay ? 400 : y;
-                ctx.translate(-targetCamX, -targetCamY);
+                ctx.translate(-x, -y);
             } else {
                 ctx.setTransform(1, 0, 0, 1, 0, 0);
             }
@@ -1309,8 +1304,7 @@
                 ctx.fillText("--- PODIUM & SKOR PERTANDINGAN ---", centerX, centerY - 105);
 
                 let startY = centerY - 65;
-                ctx.font = "bold 20px 'Segoe UI', sans-serif";
-
+            
                 let listToDisplay = lastMatchSummary ? lastMatchSummary.rankings : Object.values(gameState.clients || {}).filter(p => p.role === "player").sort((a,b)=>b.kills-a.kills);
 
                 listToDisplay.forEach((p, index) => {
