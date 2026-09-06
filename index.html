@@ -276,11 +276,27 @@
             font-weight: bold;
             text-align: left;
         }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
 
-    <div id="homeScreen" class="card" style="display: block;">
+    <!-- Layar Loading Wake-up Server -->
+    <div id="wakeUpScreen" class="card" style="display: block; text-align: center;">
+        <h2>Menghubungkan ke Server...</h2>
+        <p id="wakeUpStatus" style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">
+            Loading...
+        </p>
+        <div style="margin: 20px 0;">
+            <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(56,189,248,0.2); border-top-color: #38bdf8; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+        </div>
+        <button id="proceedHomeBtn" class="secondary" style="display: none;" onclick="showScreen('homeScreen')">Masuk ke Permainan</button>
+    </div>
+
+    <div id="homeScreen" class="card">
         <h2>Grand Arena Shooter</h2>
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Pilih mode masuk permainan di bawah ini</p>
         <button class="secondary" onclick="connectServer('admin', 'Admin Spectator')">Create Server (As Admin)</button>
@@ -441,6 +457,43 @@
             } else {
                 return "ws://" + hostname + ":8765";
             }
+        }
+
+        // Jalankan pengecekan server saat halaman pertama kali dimuat
+        window.addEventListener("DOMContentLoaded", () => {
+            checkServerAwake();
+        });
+
+        function checkServerAwake() {
+            let wsUrl = getWebSocketURL();
+            let httpPingUrl = wsUrl.replace("wss://", "https://").replace("ws://", "http://");
+
+            let statusText = document.getElementById("wakeUpStatus");
+            let proceedBtn = document.getElementById("proceedHomeBtn");
+
+            let attempt = 1;
+            let maxAttempts = 15;
+
+            let pingInterval = setInterval(() => {
+                statusText.innerText = `Membangunkan server (Percobaan ${attempt}/${maxAttempts})...`;
+                
+                fetch(httpPingUrl, { mode: 'no-cors' })
+                    .then(() => {
+                        clearInterval(pingInterval);
+                        statusText.innerText = "Server berhasil dihidupkan!";
+                        document.querySelector("#wakeUpScreen div > div").style.display = "none";
+                        proceedBtn.style.display = "block";
+                    })
+                    .catch(() => {
+                        attempt++;
+                        if (attempt > maxAttempts) {
+                            clearInterval(pingInterval);
+                            statusText.innerText = "Server merespons lambat, tapi Anda tetap bisa mencoba masuk.";
+                            document.querySelector("#wakeUpScreen div > div").style.display = "none";
+                            proceedBtn.style.display = "block";
+                        }
+                    });
+            }, 3000);
         }
 
         document.addEventListener('touchstart', function (e) {
@@ -1242,7 +1295,7 @@
 
                 let listToDisplay = lastMatchSummary ? lastMatchSummary.rankings : Object.values(gameState.clients || {}).filter(p => p.role === "player").sort((a,b)=>b.kills-a.kills);
 
-                listToDisplay.exit = listToDisplay.forEach((p, index) => {
+                listToDisplay.forEach((p, index) => {
                     let medal = index === 0 ? "🥇 1st: " : index === 1 ? "🥈 2nd: " : index === 2 ? "🥉 3rd: " : `${index + 1}. `;
                     ctx.fillText(`${medal}${p.name}   ---   ${p.kills} Kill (Sisa Nyawa: ${p.lives})`, centerX, startY);
                     startY += 34; 
