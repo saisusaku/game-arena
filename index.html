@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Web Arena Shooter - Grand Arena</title>
+    <title>Web Arena Shooter - Grand Arena (Analog)</title>
     <!-- Library QR Code Generator -->
     <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
     <style>
         html, body {
-            touch-action: manipulation;
+            touch-action: none;
             -webkit-text-size-adjust: none;
             overflow: hidden;
             margin: 0;
@@ -19,7 +19,7 @@
         }
         * { box-sizing: border-box; }
 
-        #mobileControls, #fireBtn, .dpad-btn, #gameCanvas {
+        #mobileControls, #fireBtn, #analogArea, #gameCanvas {
             touch-action: none;
         }
 
@@ -169,43 +169,36 @@
                 display: flex !important;
                 position: relative;
                 width: 100%;
-                height: 130px;
+                height: 140px;
                 margin-top: 10px;
                 justify-content: space-between;
                 align-items: center;
-                padding: 0 10px;
+                padding: 0 20px;
             }
 
-            .dpad {
+            /* Styling Analog Stick */
+            #analogArea {
                 position: relative;
-                width: 130px;
-                height: 130px;
+                width: 120px;
+                height: 120px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 2px solid rgba(255, 255, 255, 0.25);
+                border-radius: 50%;
+                touch-action: none;
             }
 
-            .dpad-btn {
+            #analogStick {
                 position: absolute;
-                width: 48px;
-                height: 48px;
+                top: 35px;
+                left: 35px;
+                width: 50px;
+                height: 50px;
                 background: rgba(2, 132, 199, 0.9);
                 border: 2px solid #ffffff;
-                border-radius: 12px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+                border-radius: 50%;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                pointer-events: none;
             }
-            .dpad-btn:active, .dpad-btn.active { background: #0369a1; transform: scale(0.95); }
-            
-            .arrow { width: 0; height: 0; border-style: solid; }
-            #btnUp .arrow { border-width: 0 6px 10px 6px; border-color: transparent transparent #ffffff transparent; }
-            #btnDown .arrow { border-width: 10px 6px 0 6px; border-color: #ffffff transparent transparent transparent; }
-            #btnLeft .arrow { border-width: 6px 10px 6px 0; border-color: transparent #ffffff transparent transparent; }
-            #btnRight .arrow { border-width: 6px 0 6px 10px; border-color: transparent transparent transparent #ffffff; }
-
-            #btnUp { top: 0; left: 41px; }
-            #btnLeft { top: 41px; left: 0; }
-            #btnRight { top: 41px; left: 82px; }
-            #btnDown { top: 82px; left: 41px; }
 
             #fireBtn {
                 position: relative;
@@ -221,6 +214,7 @@
                 align-items: center;
                 justify-content: center;
                 box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+                touch-action: none;
             }
             #fireBtn:active { transform: scale(0.92); background: #991b1b; }
         }
@@ -327,19 +321,15 @@
             <ul id="lobbyUl"></ul>
         </div>
 
-        <!-- FITUR CHAT LOBI -->
         <div class="player-list" style="max-height: 120px; text-align: left;">
             <b style="color: #38bdf8;">Chat Lobi:</b>
-            <div id="lobbyChatBox" style="height: 70px; overflow-y: auto; font-size: 11px; color: #f8fafc; margin-top: 4px; padding-right: 4px;">
-                <!-- Pesan chat akan muncul di sini -->
-            </div>
+            <div id="lobbyChatBox" style="height: 70px; overflow-y: auto; font-size: 11px; color: #f8fafc; margin-top: 4px; padding-right: 4px;"></div>
         </div>
 
         <div style="display: flex; gap: 6px; margin-bottom: 8px;">
             <input type="text" id="chatInput" placeholder="Ketik pesan lobi..." autocomplete="off" style="margin-bottom: 0; padding: 10px 12px; font-size: 13px;" onkeydown="if(event.key==='Enter') sendLobbyChat()">
             <button class="secondary" style="width: auto; margin-top: 0; padding: 10px 16px;" onclick="sendLobbyChat()">Kirim</button>
         </div>
-        <!-- AKHIR FITUR CHAT LOBI -->
 
         <div id="adminActionArea" style="display: none;">
             <button class="secondary" id="startBtn" onclick="requestStartGame()">Mulai Permainan</button>
@@ -355,12 +345,10 @@
 
         <canvas id="gameCanvas" width="1500" height="1000"></canvas>
         
+        <!-- Kontrol Analog HP -->
         <div id="mobileControls">
-            <div class="dpad">
-                <div class="dpad-btn" id="btnUp"><div class="arrow"></div></div>
-                <div class="dpad-btn" id="btnLeft"><div class="arrow"></div></div>
-                <div class="dpad-btn" id="btnRight"><div class="arrow"></div></div>
-                <div class="dpad-btn" id="btnDown"><div class="arrow"></div></div>
+            <div id="analogArea">
+                <div id="analogStick"></div>
             </div>
             <div id="fireBtn">TEMBAK</div>
         </div>
@@ -380,9 +368,13 @@
         let gameState = { game_started: false, clients: {}, bullets: [], obstacles: [], game_over: false, winner: "" };
         
         let interpolatedClients = {};
-
         let keys = {};
         let isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+
+        // State Analog Touch
+        let analogActive = false;
+        let analogTouchId = null;
+        let analogVector = { x: 0, y: 0 };
 
         let previousMyLives = 5;
         let previousMyKills = 0;
@@ -487,10 +479,7 @@
                 showScreen('roomListScreen');
             };
 
-            ws.onmessage = (event) => {
-                handleServerMessage(event);
-            };
-
+            ws.onmessage = (event) => { handleServerMessage(event); };
             ws.onclose = () => disconnectAndHome();
         }
 
@@ -599,24 +588,17 @@
                 }
             };
 
-            ws.onmessage = (event) => {
-                handleServerMessage(event);
-            };
-
+            ws.onmessage = (event) => { handleServerMessage(event); };
             ws.onclose = () => disconnectAndHome();
         }
 
-        // FUNGSI PENGIRIMAN CHAT LOBI
         function sendLobbyChat() {
             let inputEl = document.getElementById("chatInput");
             let text = inputEl.value.trim();
             if (!text) return;
 
             if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({
-                    type: "chat_message",
-                    message: text
-                }));
+                ws.send(JSON.stringify({ type: "chat_message", message: text }));
                 inputEl.value = "";
             }
         }
@@ -624,7 +606,6 @@
         function handleServerMessage(event) {
             let incomingState = JSON.parse(event.data);
 
-            // PENANGANAN PESAN CHAT MASUK
             if (incomingState.type === "chat_message") {
                 let chatBox = document.getElementById("lobbyChatBox");
                 if (chatBox) {
@@ -632,7 +613,7 @@
                     pEl.style.margin = "2px 0";
                     pEl.innerHTML = `<b style="color: #38bdf8;">${incomingState.sender}:</b> ${incomingState.message}`;
                     chatBox.appendChild(pEl);
-                    chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll ke bawah
+                    chatBox.scrollTop = chatBox.scrollHeight;
                 }
                 return;
             }
@@ -783,20 +764,6 @@
                             }
                         }
                     }
-                    
-                    if (foundAttacker === "Pemain Lain") {
-                        let closestEnemyDist = 9999;
-                        for (let id in gameState.clients) {
-                            if (id !== myId && gameState.clients[id].role === "player") {
-                                let enemy = gameState.clients[id];
-                                let d = Math.hypot(enemy.x - x, enemy.y - y);
-                                if (d < closestEnemyDist) {
-                                    closestEnemyDist = d;
-                                    foundAttacker = enemy.name;
-                                }
-                            }
-                        }
-                    }
 
                     lastAttackerName = foundAttacker;
                     isRespawningDelay = true;
@@ -898,6 +865,7 @@
             return ((px - nearest_x)**2 + (py - nearest_y)**2) < (radius**2);
         }
 
+        // --- Event Listener Keyboard Desktop ---
         window.addEventListener("keydown", (e) => { 
             let k = e.key.toLowerCase();
             keys[k] = true; 
@@ -927,27 +895,65 @@
                 if (userRole === 'player' && e.button === 0 && !isRespawningDelay) triggerShoot();
             });
         } else {
-            const bindTouch = (id, keyName) => {
-                const el = document.getElementById(id);
-                el.addEventListener("touchstart", (e) => {
-                    e.preventDefault();
-                    keys[keyName] = true; keys[keyName.toUpperCase()] = true; keys["Key" + keyName.toUpperCase()] = true;
-                    el.classList.add("active"); 
-                }, { passive: false });
+            // --- Logika Touch Untuk Analog & Tombol Tembak ---
+            const analogArea = document.getElementById('analogArea');
+            const analogStick = document.getElementById('analogStick');
 
-                const releaseTouch = (e) => {
-                    e.preventDefault();
-                    keys[keyName] = false; keys[keyName.toUpperCase()] = false; keys["Key" + keyName.toUpperCase()] = false;
-                    el.classList.remove("active");
-                };
-                el.addEventListener("touchend", releaseTouch, { passive: false });
-                el.addEventListener("touchcancel", releaseTouch, { passive: false });
+            analogArea.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                let touch = e.changedTouches[0];
+                analogTouchId = touch.identifier;
+                analogActive = true;
+                updateAnalogPosition(touch);
+            }, { passive: false });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!analogActive) return;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    let touch = e.changedTouches[i];
+                    if (touch.identifier === analogTouchId) {
+                        e.preventDefault();
+                        updateAnalogPosition(touch);
+                    }
+                }
+            }, { passive: false });
+
+            const resetAnalog = (e) => {
+                if (!analogActive) return;
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    if (e.changedTouches[i].identifier === analogTouchId) {
+                        e.preventDefault();
+                        analogActive = false;
+                        analogTouchId = null;
+                        analogVector = { x: 0, y: 0 };
+                        analogStick.style.transform = `translate(0px, 0px)`;
+                    }
+                }
             };
+            window.addEventListener('touchend', resetAnalog, { passive: false });
+            window.addEventListener('touchcancel', resetAnalog, { passive: false });
 
-            bindTouch("btnUp", "w");
-            bindTouch("btnLeft", "a");
-            bindTouch("btnRight", "d");
-            bindTouch("btnDown", "s");
+            function updateAnalogPosition(touch) {
+                let rect = analogArea.getBoundingClientRect();
+                let centerX = rect.left + rect.width / 2;
+                let centerY = rect.top + rect.height / 2;
+                
+                let dx = touch.clientX - centerX;
+                let dy = touch.clientY - centerY;
+                let distance = Math.hypot(dx, dy);
+                let maxRadius = 35; // Batas geser stick dalam lingkaran
+
+                if (distance > maxRadius) {
+                    dx = (dx / distance) * maxRadius;
+                    dy = (dy / distance) * maxRadius;
+                }
+
+                analogStick.style.transform = `translate(${dx}px, ${dy}px)`;
+                
+                // Normalisasi arah vektor (skala -1 sampai 1)
+                analogVector.x = dx / maxRadius;
+                analogVector.y = dy / maxRadius;
+            }
 
             document.getElementById("fireBtn").addEventListener("touchstart", (e) => {
                 e.preventDefault();
@@ -1005,25 +1011,31 @@
                 let nextX = x, nextY = y;
                 let currentSpeed = baseSpeed * deltaTime;
 
-                if (keys["w"] || keys["W"] || keys["KeyW"]) { 
-                    nextY -= currentSpeed; 
-                    currentDirection = 'up';
-                    angle = -Math.PI / 2;
-                }
-                if (keys["s"] || keys["S"] || keys["KeyS"]) { 
-                    nextY += currentSpeed; 
-                    currentDirection = 'down';
-                    angle = Math.PI / 2;
-                }
-                if (keys["a"] || keys["A"] || keys["KeyA"]) { 
-                    nextX -= currentSpeed; 
-                    currentDirection = 'left';
-                    angle = Math.PI;
-                }
-                if (keys["d"] || keys["D"] || keys["KeyD"]) { 
-                    nextX += currentSpeed; 
-                    currentDirection = 'right';
-                    angle = 0;
+                if (isMobile && analogActive) {
+                    // Pergerakan berbasis Analog Mobile
+                    nextX += analogVector.x * currentSpeed;
+                    nextY += analogVector.y * currentSpeed;
+
+                    if (Math.abs(analogVector.x) > Math.abs(analogVector.y)) {
+                        currentDirection = analogVector.x > 0 ? 'right' : 'left';
+                    } else if (Math.abs(analogVector.y) > 0) {
+                        currentDirection = analogVector.y > 0 ? 'down' : 'up';
+                    }
+                    angle = Math.atan2(analogVector.y, analogVector.x);
+                } else {
+                    // Pergerakan berbasis Keyboard Desktop
+                    if (keys["w"] || keys["W"] || keys["KeyW"]) { 
+                        nextY -= currentSpeed; currentDirection = 'up'; angle = -Math.PI / 2;
+                    }
+                    if (keys["s"] || keys["S"] || keys["KeyS"]) { 
+                        nextY += currentSpeed; currentDirection = 'down'; angle = Math.PI / 2;
+                    }
+                    if (keys["a"] || keys["A"] || keys["KeyA"]) { 
+                        nextX -= currentSpeed; currentDirection = 'left'; angle = Math.PI;
+                    }
+                    if (keys["d"] || keys["D"] || keys["KeyD"]) { 
+                        nextX += currentSpeed; currentDirection = 'right'; angle = 0;
+                    }
                 }
 
                 nextX = Math.max(20, Math.min(1200 - 20, nextX));
@@ -1108,9 +1120,7 @@
                 if (p.role === "player" && p.lives > 0) {
                     let isMe = p.name.trim().toLowerCase() === playerName.trim().toLowerCase();
                     
-                    if (isMe && isRespawningDelay) {
-                        continue; 
-                    }
+                    if (isMe && isRespawningDelay) continue;
 
                     ctx.save();
                     
