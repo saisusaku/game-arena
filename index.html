@@ -327,6 +327,20 @@
             <ul id="lobbyUl"></ul>
         </div>
 
+        <!-- FITUR CHAT LOBI -->
+        <div class="player-list" style="max-height: 120px; text-align: left;">
+            <b style="color: #38bdf8;">Chat Lobi:</b>
+            <div id="lobbyChatBox" style="height: 70px; overflow-y: auto; font-size: 11px; color: #f8fafc; margin-top: 4px; padding-right: 4px;">
+                <!-- Pesan chat akan muncul di sini -->
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+            <input type="text" id="chatInput" placeholder="Ketik pesan lobi..." autocomplete="off" style="margin-bottom: 0; padding: 10px 12px; font-size: 13px;" onkeydown="if(event.key==='Enter') sendLobbyChat()">
+            <button class="secondary" style="width: auto; margin-top: 0; padding: 10px 16px;" onclick="sendLobbyChat()">Kirim</button>
+        </div>
+        <!-- AKHIR FITUR CHAT LOBI -->
+
         <div id="adminActionArea" style="display: none;">
             <button class="secondary" id="startBtn" onclick="requestStartGame()">Mulai Permainan</button>
         </div>
@@ -401,14 +415,11 @@
             'left': 6
         };
 
-        // FUNGSI HELPER UNTUK MENDAPATKAN URL WEBSOCKET KE RENDER ATAU LOKAL
         function getWebSocketURL() {
             let hostname = window.location.hostname;
             if (hostname.includes("github.io")) {
-                // Mengarahkan langsung ke URL Render backend Anda
                 return "wss://game-server-arena.onrender.com";
             } else {
-                // Jika dijalankan secara lokal (localhost)
                 return "ws://" + hostname + ":8765";
             }
         }
@@ -595,8 +606,36 @@
             ws.onclose = () => disconnectAndHome();
         }
 
+        // FUNGSI PENGIRIMAN CHAT LOBI
+        function sendLobbyChat() {
+            let inputEl = document.getElementById("chatInput");
+            let text = inputEl.value.trim();
+            if (!text) return;
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({
+                    type: "chat_message",
+                    message: text
+                }));
+                inputEl.value = "";
+            }
+        }
+
         function handleServerMessage(event) {
             let incomingState = JSON.parse(event.data);
+
+            // PENANGANAN PESAN CHAT MASUK
+            if (incomingState.type === "chat_message") {
+                let chatBox = document.getElementById("lobbyChatBox");
+                if (chatBox) {
+                    let pEl = document.createElement("div");
+                    pEl.style.margin = "2px 0";
+                    pEl.innerHTML = `<b style="color: #38bdf8;">${incomingState.sender}:</b> ${incomingState.message}`;
+                    chatBox.appendChild(pEl);
+                    chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll ke bawah
+                }
+                return;
+            }
 
             if (incomingState.type === "room_list") {
                 let ul = document.getElementById("roomListUl");
