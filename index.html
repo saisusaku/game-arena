@@ -405,8 +405,8 @@
         function getWebSocketURL() {
             let hostname = window.location.hostname;
             if (hostname.includes("github.io")) {
-                // Ganti URL di bawah ini dengan URL Web Service Render backend Anda yang sebenarnya!
-                return "wss://NAMA-SERVICE-ANDA.onrender.com";
+                // Mengarahkan langsung ke URL Render backend Anda
+                return "wss://game-server-arena.onrender.com";
             } else {
                 // Jika dijalankan secara lokal (localhost)
                 return "ws://" + hostname + ":8765";
