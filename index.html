@@ -107,6 +107,7 @@
         button.danger { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
         button.danger:hover { box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
 
+        /* Fullscreen Game Container Optimization yang Benar & Presisi */
         .game-container {
             display: none;
             flex-direction: column;
@@ -675,12 +676,12 @@
                     
                     if (!qrGenerated && typeof QRCode !== 'undefined') {
                         document.getElementById("qrcode").innerHTML = "";
-                        let currentHost = window.location.hostname;
-                        let currentPort = window.location.port ? ":" + window.location.port : "";
-                        let clientShareUrl = window.location.protocol + "//" + currentHost + currentPort + "/";
+                        
+                        // URL target spesifik artikel Anda
+                        let targetUrl = "https://www.kepotekno.com/2026/09/kepogames-grand-arena-shoter-pvp.html";
                         
                         new QRCode(document.getElementById("qrcode"), {
-                            text: clientShareUrl,
+                            text: targetUrl,
                             width: 90,
                             height: 90,
                             colorDark: "#0f172a",
@@ -688,7 +689,7 @@
                             correctLevel: QRCode.CorrectLevel.H
                         });
                         
-                        document.getElementById("qrTextInfo").innerText = currentHost + currentPort;
+                        document.getElementById("qrTextInfo").innerText = "kepotekno.com/...";
                         qrGenerated = true;
                     }
                 } else {
