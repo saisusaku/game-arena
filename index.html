@@ -107,7 +107,6 @@
         button.danger { background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); }
         button.danger:hover { box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5); }
 
-        /* Fullscreen Game Container Optimization yang Benar & Presisi */
         .game-container {
             display: none;
             flex-direction: column;
@@ -162,13 +161,8 @@
                 justify-content: space-between;
                 padding: 4px;
             }
-            #gameHeader {
-                max-width: 100%;
-            }
-            #gameCanvas {
-                max-width: 100%;
-                max-height: calc(100vh - 145px);
-            }
+            #gameHeader { max-width: 100%; }
+            #gameCanvas { max-width: 100%; max-height: calc(100vh - 145px); }
             #mobileControls {
                 display: flex !important;
                 position: relative;
@@ -179,7 +173,6 @@
                 padding: 0 15px;
                 flex-shrink: 0;
             }
-
             #analogArea {
                 position: relative;
                 width: 95px;
@@ -188,33 +181,24 @@
                 border: 2px solid rgba(255, 255, 255, 0.25);
                 border-radius: 50%;
             }
-
             #analogStick {
                 position: absolute;
-                top: 24px;
-                left: 24px;
-                width: 43px;
-                height: 43px;
+                top: 24px; left: 24px;
+                width: 43px; height: 43px;
                 background: rgba(2, 132, 199, 0.9);
                 border: 2px solid #ffffff;
                 border-radius: 50%;
                 box-shadow: 0 4px 10px rgba(0,0,0,0.3);
                 pointer-events: none;
             }
-
             #fireBtn {
                 position: relative;
-                width: 75px;
-                height: 75px;
+                width: 75px; height: 75px;
                 background: linear-gradient(135deg, #ef4444, #b91c1c);
                 border: 3px solid #fff;
-                color: white;
-                font-weight: bold;
-                font-size: 11px;
+                color: white; font-weight: bold; font-size: 11px;
                 border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                display: flex; align-items: center; justify-content: center;
                 box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
             }
         }
@@ -231,66 +215,31 @@
             font-size: 12px;
             color: #cbd5e1;
         }
-        .player-list ul {
-            padding-left: 18px;
-            color: #e2e8f0;
-            margin: 2px 0 0 0;
-        }
+        .player-list ul { padding-left: 18px; color: #e2e8f0; margin: 2px 0 0 0; }
 
         #adminQrSection {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            margin: 6px 0;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 100%; margin: 6px 0;
         }
         #qrcode-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px;
-            border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(255, 255, 255, 0.05); padding: 8px; border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        #qrcode {
-            background: white;
-            padding: 6px;
-            border-radius: 6px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        #qrcode { background: white; padding: 6px; border-radius: 6px; display: flex; justify-content: center; align-items: center; }
         .bot-toggle-box {
-            background: rgba(30, 41, 59, 0.9);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            padding: 10px 14px;
-            border-radius: 10px;
-            margin: 8px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            font-size: 13px;
-            color: #38bdf8;
-            font-weight: bold;
-            text-align: left;
+            background: rgba(30, 41, 59, 0.9); border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 10px 14px; border-radius: 10px; margin: 8px 0; display: flex;
+            flex-direction: column; gap: 6px; font-size: 13px; color: #38bdf8; font-weight: bold; text-align: left;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <!-- Layar Loading Wake-up Server -->
     <div id="wakeUpScreen" class="card" style="display: block; text-align: center;">
         <h2>Menghubungkan ke Server...</h2>
-        <p id="wakeUpStatus" style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">
-            Loading...
-        </p>
+        <p id="wakeUpStatus" style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Loading...</p>
         <div style="margin: 20px 0;">
             <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(56,189,248,0.2); border-top-color: #38bdf8; border-radius: 50%; animation: spin 1s linear infinite;"></div>
         </div>
@@ -316,11 +265,9 @@
     <div id="roomListScreen" class="card">
         <h2>Pilih Lobi Aktif</h2>
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 15px;">Pilih lobi permainan yang ingin dimasuki</p>
-        
         <div class="player-list" style="max-height: 180px;">
             <ul id="roomListUl" style="padding-left: 0; list-style: none; margin: 0;"></ul>
         </div>
-
         <button class="secondary" onclick="refreshRoomList()">Muat Ulang Lobi</button>
         <button class="danger" style="margin-top: 8px;" onclick="showScreen('homeScreen')">Kembali</button>
     </div>
@@ -338,7 +285,6 @@
             </div>
         </div>
 
-        <!-- Pengaturan Bot Khusus Host -->
         <div id="hostBotControl" class="bot-toggle-box" style="display: none;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span>🤖 Aktifkan AI Bot Lawan:</span>
@@ -394,9 +340,7 @@
         <canvas id="gameCanvas" width="1200" height="800"></canvas>
         
         <div id="mobileControls">
-            <div id="analogArea">
-                <div id="analogStick"></div>
-            </div>
+            <div id="analogArea"><div id="analogStick"></div></div>
             <div id="fireBtn">TEMBAK</div>
         </div>
     </div>
@@ -464,13 +408,10 @@
 
         function toggleFullScreen() {
             let elem = document.documentElement;
-            
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
                 if (elem.requestFullscreen) {
-                    elem.requestFullscreen().catch(err => {
-                        console.log("Error attempting to enable fullscreen:", err.message);
-                    });
-                } else if (elem.webkitRequestFullscreen) { /* Safari / iOS / Webkit lama */
+                    elem.requestFullscreen().catch(err => {});
+                } else if (elem.webkitRequestFullscreen) {
                     elem.webkitRequestFullscreen();
                 }
             } else {
@@ -482,23 +423,18 @@
             }
         }
 
-        window.addEventListener("DOMContentLoaded", () => {
-            checkServerAwake();
-        });
+        window.addEventListener("DOMContentLoaded", () => { checkServerAwake(); });
 
         function checkServerAwake() {
             let wsUrl = getWebSocketURL();
             let httpPingUrl = wsUrl.replace("wss://", "https://").replace("ws://", "http://");
-
             let statusText = document.getElementById("wakeUpStatus");
             let proceedBtn = document.getElementById("proceedHomeBtn");
-
             let attempt = 1;
             let maxAttempts = 15;
 
             let pingInterval = setInterval(() => {
                 statusText.innerText = `Membangunkan server (Percobaan ${attempt}/${maxAttempts})...`;
-                
                 fetch(httpPingUrl, { mode: 'no-cors' })
                     .then(() => {
                         clearInterval(pingInterval);
@@ -518,10 +454,7 @@
             }, 3000);
         }
 
-        document.addEventListener('touchstart', function (e) {
-            if (e.touches.length > 1) { e.preventDefault(); }
-        }, { passive: false });
-
+        document.addEventListener('touchstart', function (e) { if (e.touches.length > 1) { e.preventDefault(); } }, { passive: false });
         document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
 
         let lastTouchEnd = 0;
@@ -530,7 +463,6 @@
             if (now - lastTouchEnd <= 300) { event.preventDefault(); }
             lastTouchEnd = now;
         }, { passive: false });
-
         document.addEventListener('dblclick', function (e) { e.preventDefault(); }, { passive: false });
 
         function showScreen(screenId) {
@@ -560,27 +492,19 @@
         function submitPlayerScreen() {
             let nameInput = document.getElementById("playerNameInput").value.trim();
             if (!nameInput) return alert("Nama pemain tidak boleh kosong!");
-            
             playerName = nameInput;
             isHost = (actionTargetRole === 'create_player');
             userRole = 'player';
-            
-            if (isHost) {
-                connectServer('player', playerName);
-            } else {
-                connectAndFetchRooms();
-            }
+            if (isHost) { connectServer('player', playerName); } else { connectAndFetchRooms(); }
         }
 
         function connectAndFetchRooms() {
             userRole = 'player';
             ws = new WebSocket(getWebSocketURL());
-
             ws.onopen = () => {
                 ws.send(JSON.stringify({ type: "get_rooms", name: playerName }));
                 showScreen('roomListScreen');
             };
-
             ws.onmessage = (event) => { handleServerMessage(event); };
             ws.onclose = () => disconnectAndHome();
         }
@@ -663,7 +587,6 @@
             isHost = (userRole === 'admin' || role === 'player');
 
             ws = new WebSocket(getWebSocketURL());
-
             ws.onopen = () => {
                 ws.send(JSON.stringify({ type: "login", name: playerName, role: userRole }));
                 showScreen('lobbyScreen');
@@ -676,19 +599,10 @@
                     
                     if (!qrGenerated && typeof QRCode !== 'undefined') {
                         document.getElementById("qrcode").innerHTML = "";
-                        
-                        // URL target spesifik artikel Anda
                         let targetUrl = "https://www.kepotekno.com/2026/09/kepogames-grand-arena-shoter-pvp.html";
-                        
                         new QRCode(document.getElementById("qrcode"), {
-                            text: targetUrl,
-                            width: 90,
-                            height: 90,
-                            colorDark: "#0f172a",
-                            colorLight: "#ffffff",
-                            correctLevel: QRCode.CorrectLevel.H
+                            text: targetUrl, width: 90, height: 90, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
                         });
-                        
                         document.getElementById("qrTextInfo").innerText = "kepotekno.com/...";
                         qrGenerated = true;
                     }
@@ -699,7 +613,6 @@
                     document.getElementById('lobbyStatusText').innerText = "Menunggu Host memulai permainan...";
                 }
             };
-
             ws.onmessage = (event) => { handleServerMessage(event); };
             ws.onclose = () => disconnectAndHome();
         }
@@ -708,7 +621,6 @@
             let inputEl = document.getElementById("chatInput");
             let text = inputEl.value.trim();
             if (!text) return;
-
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: "chat_message", message: text }));
                 inputEl.value = "";
@@ -741,11 +653,8 @@
                 rooms.forEach(room => {
                     let botLabel = room.use_bots ? ` 🤖 [${room.bot_count} Bot]` : "";
                     let li = document.createElement('li');
-                    li.style.display = "flex";
-                    li.style.justifyContent = "space-between";
-                    li.style.alignItems = "center";
-                    li.style.padding = "8px 10px";
-                    li.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+                    li.style.display = "flex"; li.style.justifyContent = "space-between"; li.style.alignItems = "center";
+                    li.style.padding = "8px 10px"; li.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
                     li.innerHTML = `<span><b>Lobi:</b> ${room.name}${botLabel} <br><small style="color:#94a3b8;">(${room.playersCount} pemain)</small></span> <button style="width: auto; padding: 6px 14px; margin:0;" onclick="joinSpecificRoom('${room.id}')">Gabung</button>`;
                     ul.appendChild(li);
                 });
@@ -860,24 +769,22 @@
                     x = serverX; y = serverY;
                 }
 
-                if (lastServerLives !== null && currentMyLives > lastServerLives) {
-                    x = serverX; y = serverY;
-                }
-                
                 if (currentMyKills > previousMyKills) playSound("hit_target");
                 
+                // Ketika terkena tembakan (nyawa berkurang)
                 if (currentMyLives < previousMyLives) {
                     hitEffectTimer = 15;
                     playSound("hit");
-                    x = serverX; y = serverY;
-
+                    
+                    // Jangan langsung set x dan y ke serverX/serverY di sini, 
+                    // biarkan berada di posisi lama atau ditahan hingga respawn selesai, 
+                    // atau simpan target respawn dari server.
                     let foundAttacker = "Pemain Lain";
                     let minDist = 350; 
                     
                     for (let b of (gameState.bullets || [])) {
                         let dist = Math.hypot(b.x - x, b.y - y);
                         let bOwnerId = b.owner_id || b.owner || b.clientId; 
-                        
                         if (dist < minDist && bOwnerId !== myId) {
                             minDist = dist;
                             if (bOwnerId && gameState.clients[bOwnerId]) {
@@ -888,9 +795,16 @@
 
                     lastAttackerName = foundAttacker;
                     isRespawningDelay = true;
+                    // Atur waktu tunggu respawn 6 detik (sesuai durasi kebal server)
                     respawnTimerEnd = Date.now() + 6000;
                 }
                 
+                // Jika tidak sedang dalam masa delay respawn, ikuti posisi server terbaru
+                if (!isRespawningDelay && lastServerLives !== null && currentMyLives > lastServerLives) {
+                    x = serverX; 
+                    y = serverY;
+                }
+
                 previousMyLives = currentMyLives;
                 previousMyKills = currentMyKills;
                 lastServerLives = currentMyLives;
@@ -957,9 +871,7 @@
                 let p = gameState.clients[id];
                 if (p.role === "player") {
                     totalPlayers++;
-                    if (p.lives > 0) {
-                        alivePlayers++;
-                    }
+                    if (p.lives > 0) { alivePlayers++; }
                     if (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase()) {
                         myLives = p.lives;
                     }
@@ -968,7 +880,6 @@
 
             document.getElementById("playerOnlineCount").innerText = `Total Unit: ${totalPlayers}`;
             document.getElementById("alivePlayersStatus").innerText = `Sisa Pemain: ${alivePlayers}`;
-            
             let hearts = "❤️".repeat(Math.max(0, myLives)) + "🖤".repeat(Math.max(0, 5 - myLives));
             
             if (userRole === 'admin') {
@@ -998,7 +909,6 @@
             let k = e.key.toLowerCase();
             keys[k] = true; 
             keys[e.code] = true; 
-            
             if ((e.code === "Space" || k === " ") && userRole === 'player' && gameState.game_started && !isRespawningDelay) {
                 e.preventDefault();
                 triggerShoot();
@@ -1064,17 +974,14 @@
                 let rect = analogArea.getBoundingClientRect();
                 let centerX = rect.left + rect.width / 2;
                 let centerY = rect.top + rect.height / 2;
-                
                 let dx = touch.clientX - centerX;
                 let dy = touch.clientY - centerY;
                 let distance = Math.hypot(dx, dy);
                 let maxRadius = 32;
-
                 if (distance > maxRadius) {
                     dx = (dx / distance) * maxRadius;
                     dy = (dy / distance) * maxRadius;
                 }
-
                 analogStick.style.transform = `translate(${dx}px, ${dy}px)`;
                 analogVector.x = dx / maxRadius;
                 analogVector.y = dy / maxRadius;
@@ -1123,8 +1030,22 @@
         }
 
         function update(deltaTime) {
+            // Selesai waktu tunggu respawn
             if (isRespawningDelay && Date.now() >= respawnTimerEnd) {
                 isRespawningDelay = false;
+                // Sinkronkan posisi langsung ke posisi baru dari server saat respawn selesai
+                let myId = null;
+                for (let id in gameState.clients) {
+                    let client = gameState.clients[id];
+                    if (client.role === "player" && !client.is_bot && client.name.trim().toLowerCase() === playerName.trim().toLowerCase()) {
+                        myId = id;
+                        break;
+                    }
+                }
+                if (myId && gameState.clients[myId]) {
+                    x = gameState.clients[myId].x;
+                    y = gameState.clients[myId].y;
+                }
             }
 
             if (userRole === 'player' && gameState.game_started && !gameState.game_over && x !== null && y !== null && !isRespawningDelay) {
@@ -1167,7 +1088,6 @@
             for (let id in gameState.clients) {
                 let p = gameState.clients[id];
                 let isMe = (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
-                
                 if (!isMe) {
                     if (!interpolatedClients[id]) {
                         interpolatedClients[id] = { x: p.x, y: p.y, direction: p.direction || 'up' };
@@ -1183,7 +1103,6 @@
         function draw() {
             let ctx = canvas.getContext("2d");
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             ctx.save();
 
             let isPlayerRole = (userRole === 'player' && gameState.game_started && !gameState.game_over);
@@ -1226,10 +1145,11 @@
                 let p = gameState.clients[id];
                 if (p.role === "player" && p.lives > 0) {
                     let isMe = (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
+                    
+                    // --- PERBAIKAN UTAMA: Jika karakter Anda dan sedang dalam waktu tunggu respawn, jangan dirender/digambar di map! ---
                     if (isMe && isRespawningDelay) continue;
 
                     ctx.save();
-                    
                     let renderX = isMe ? x : (interpolatedClients[id] ? interpolatedClients[id].x : p.x);
                     let renderY = isMe ? y : (interpolatedClients[id] ? interpolatedClients[id].y : p.y);
                     let pDir = isMe ? currentDirection : (interpolatedClients[id] ? interpolatedClients[id].direction : (p.direction || 'up'));
@@ -1245,7 +1165,6 @@
                     let sheetH = planeSprite.height || 600;
                     let sW = sheetW / SPRITE_COLS;
                     let sH = sheetH / SPRITE_ROWS;
-                    
                     let col = frameIndex % SPRITE_COLS;
                     let row = Math.floor(frameIndex / SPRITE_COLS);
                     let sX = col * sW;
@@ -1253,8 +1172,7 @@
 
                     let renderW = 36, renderH = 26;
                     let offscreen = document.createElement('canvas');
-                    offscreen.width = sW;
-                    offscreen.height = sH;
+                    offscreen.width = sW; offscreen.height = sH;
                     let oCtx = offscreen.getContext('2d');
 
                     oCtx.drawImage(planeSprite, sX, sY, sW, sH, 0, 0, sW, sH);
@@ -1277,6 +1195,7 @@
 
             ctx.restore(); 
 
+            // Tampilan Layar Hitungan Mundur Respawn
             if (isRespawningDelay && userRole === 'player' && gameState.game_started && !gameState.game_over) {
                 ctx.save();
                 let sLeft = Math.max(0, Math.ceil((respawnTimerEnd - Date.now()) / 1000));
@@ -1293,14 +1212,10 @@
 
             if (gameState.game_over) {
                 ctx.save();
-                let overlayW = canvas.width;
-                let overlayH = canvas.height;
-
+                let overlayW = canvas.width, overlayH = canvas.height;
                 ctx.fillStyle = "rgba(15, 23, 42, 0.96)";
                 ctx.fillRect(0, 0, overlayW, overlayH);
-
-                let centerX = overlayW / 2;
-                let centerY = overlayH / 2;
+                let centerX = overlayW / 2, centerY = overlayH / 2;
 
                 ctx.fillStyle = "#ef4444"; ctx.font = "bold 44px 'Segoe UI', sans-serif"; ctx.textAlign = "center";
                 ctx.fillText(`PERMAINAN SELESAI`, centerX, centerY - 210);
@@ -1312,7 +1227,6 @@
                 ctx.fillText("--- PODIUM & SKOR PERTANDINGAN ---", centerX, centerY - 105);
 
                 let startY = centerY - 65;
-            
                 let listToDisplay = lastMatchSummary ? lastMatchSummary.rankings : Object.values(gameState.clients || {}).filter(p => p.role === "player").sort((a,b)=>b.kills-a.kills);
 
                 listToDisplay.forEach((p, index) => {
@@ -1337,7 +1251,6 @@
             let deltaTime = (currentTime - lastTime) / 1000;
             lastTime = currentTime;
             if (deltaTime > 0.1) deltaTime = 0.1;
-
             update(deltaTime);
             draw();
             requestAnimationFrame(gameLoop);
