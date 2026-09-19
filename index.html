@@ -411,14 +411,14 @@
         const SPRITE_ROWS = 3;
 
         const DIRECTION_SPRITES = {
-            'up': 0,              // Menghadap atas (sesuaikan dengan posisi pesawat tegak)
-            'down': 3,            // Menghadap bawah
-            'right': 5,           // Menghadap kanan
-            'left': 6,            // Menghadap kiri
-            'up-left': 10,         // Serong kiri atas (Pojok Kiri Atas)[cite: 12]
-            'up-right': 2,        // Serong kanan atas (Pojok Kanan Atas)[cite: 12]
-            'down-left': 4,       // Serong kiri bawah
-            'down-right': 3      // Serong kanan bawah
+            'up': 0,              
+            'down': 3,            
+            'right': 5,           
+            'left': 6,            
+            'up-left': 10,         
+            'up-right': 2,        
+            'down-left': 4,       
+            'down-right': 3      
         };
 
         function getWebSocketURL() {
@@ -591,7 +591,6 @@
             } catch (e) {}
         }
 
-        // Fungsi Pemutar Suara Kustom (Explosion, Gunshot, Gunreload)
         function playAudioFile(elementId) {
             let sound = document.getElementById(elementId);
             if (sound) {
@@ -705,7 +704,6 @@
                             startTime: Date.now(),
                             duration: 600
                         });
-                        // Putar suara ledakan explosion.mp3
                         playAudioFile("explosionSound");
                     }
                 }
@@ -805,6 +803,17 @@
 
                 if ((x === null || y === null || isNaN(x)) && serverX !== undefined && serverY !== undefined) {
                     x = serverX; y = serverY;
+                }
+
+                // --- Penyesuaian Klien: Smooth Koreksi Posisi dari Server (Mengatasi Jitter Pantulan) ---
+                if (x !== null && y !== null) {
+                    let diffX = serverX - x;
+                    let diffY = serverY - y;
+                    // Jika ada perbedaan posisi drastis (misal akibat pantulan/bounce), interpolasikan secara responsif
+                    if (Math.hypot(diffX, diffY) > 2.0) {
+                        x += diffX * 0.4;
+                        y += diffY * 0.4;
+                    }
                 }
 
                 if (currentMyKills > previousMyKills) playSound("hit_target");
@@ -1049,14 +1058,12 @@
 
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: "shoot", x: spawnX, y: spawnY, dx: dx, dy: dy }));
-                // Putar suara tembakan gunshot.mp3
                 playAudioFile("gunshotSound");
                 ammo--;
                 updateGameHeader();
 
                 if (ammo <= 0) {
                     isReloading = true;
-                    // Putar suara reload gunreload.mp3
                     playAudioFile("gunreloadSound");
                     setTimeout(() => {
                         ammo = maxAmmo;
@@ -1112,8 +1119,12 @@
                 if (!hit) {
                     x = nextX; y = nextY;
                 } else {
+                    // Efek pantulan kecil di klien saat membentur dinding rintangan secara lokal
                     if (!gameState.obstacles.some(obs => checkLineCollisionClient(nextX, y, 18, obs))) x = nextX;
+                    else x = x - (nextX - x) * 0.3;
+                    
                     if (!gameState.obstacles.some(obs => checkLineCollisionClient(x, nextY, 18, obs))) y = nextY;
+                    else y = y - (nextY - y) * 0.3;
                 }
 
                 if (ws && ws.readyState === WebSocket.OPEN) {
