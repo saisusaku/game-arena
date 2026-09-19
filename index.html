@@ -173,6 +173,7 @@
                 padding: 0 15px;
                 flex-shrink: 0;
             }
+
             #analogArea {
                 position: relative;
                 width: 95px;
@@ -181,6 +182,7 @@
                 border: 2px solid rgba(255, 255, 255, 0.25);
                 border-radius: 50%;
             }
+
             #analogStick {
                 position: absolute;
                 top: 24px; left: 24px;
@@ -191,6 +193,7 @@
                 box-shadow: 0 4px 10px rgba(0,0,0,0.3);
                 pointer-events: none;
             }
+
             #fireBtn {
                 position: relative;
                 width: 75px; height: 75px;
@@ -771,14 +774,10 @@
 
                 if (currentMyKills > previousMyKills) playSound("hit_target");
                 
-                // Ketika terkena tembakan (nyawa berkurang)
                 if (currentMyLives < previousMyLives) {
                     hitEffectTimer = 15;
                     playSound("hit");
                     
-                    // Jangan langsung set x dan y ke serverX/serverY di sini, 
-                    // biarkan berada di posisi lama atau ditahan hingga respawn selesai, 
-                    // atau simpan target respawn dari server.
                     let foundAttacker = "Pemain Lain";
                     let minDist = 350; 
                     
@@ -795,11 +794,10 @@
 
                     lastAttackerName = foundAttacker;
                     isRespawningDelay = true;
-                    // Atur waktu tunggu respawn 6 detik (sesuai durasi kebal server)
-                    respawnTimerEnd = Date.now() + 6000;
+                    // Durasi respawn delay 5 detik
+                    respawnTimerEnd = Date.now() + 5000;
                 }
                 
-                // Jika tidak sedang dalam masa delay respawn, ikuti posisi server terbaru
                 if (!isRespawningDelay && lastServerLives !== null && currentMyLives > lastServerLives) {
                     x = serverX; 
                     y = serverY;
@@ -1030,10 +1028,8 @@
         }
 
         function update(deltaTime) {
-            // Selesai waktu tunggu respawn
             if (isRespawningDelay && Date.now() >= respawnTimerEnd) {
                 isRespawningDelay = false;
-                // Sinkronkan posisi langsung ke posisi baru dari server saat respawn selesai
                 let myId = null;
                 for (let id in gameState.clients) {
                     let client = gameState.clients[id];
@@ -1146,8 +1142,14 @@
                 if (p.role === "player" && p.lives > 0) {
                     let isMe = (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
                     
-                    // --- PERBAIKAN UTAMA: Jika karakter Anda dan sedang dalam waktu tunggu respawn, jangan dirender/digambar di map! ---
+                    // Sembunyikan pemain sendiri jika sedang delay respawn
                     if (isMe && isRespawningDelay) continue;
+
+                    // Sembunyikan Bot jika sedang dalam masa delay respawn dari server
+                    let serverCurrentTime = Date.now() / 1000;
+                    if (p.is_bot && p.respawn_delay_until && serverCurrentTime < p.respawn_delay_until) {
+                        continue;
+                    }
 
                     ctx.save();
                     let renderX = isMe ? x : (interpolatedClients[id] ? interpolatedClients[id].x : p.x);
@@ -1195,7 +1197,6 @@
 
             ctx.restore(); 
 
-            // Tampilan Layar Hitungan Mundur Respawn
             if (isRespawningDelay && userRole === 'player' && gameState.game_started && !gameState.game_over) {
                 ctx.save();
                 let sLeft = Math.max(0, Math.ceil((respawnTimerEnd - Date.now()) / 1000));
