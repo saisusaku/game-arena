@@ -884,10 +884,13 @@
                 document.getElementById("myLivesStatus").innerText = "Mode: Penonton (Full Map Admin)";
             } else if (isRespawningDelay) {
                 let sLeft = Math.max(0, Math.ceil((respawnTimerEnd - Date.now()) / 1000));
-                document.getElementById("myLivesStatus").innerText = `Respawn & Kebal (${sLeft}s)...`;
+                document.getElementById("myLivesStatus").innerText = `Respawn (${sLeft}s)...`;
             } else {
+                // Cari apakah diri sendiri sedang dalam masa kebal (blinking)
+                let myClientObj = Object.values(gameState.clients || {}).find(p => !p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
+                let invulText = (myClientObj && myClientObj.is_invulnerable) ? " 🛡️ [KEBAL]" : "";
                 let ammoText = isReloading ? "🔄 Reloading..." : `Peluru: [${ammo}/${maxAmmo}]`;
-                document.getElementById("myLivesStatus").innerText = `Nyawa: ${hearts}  |  ${ammoText}`;
+                document.getElementById("myLivesStatus").innerText = `Nyawa: ${hearts}${invulText}  |  ${ammoText}`;
             }
         }
 
@@ -1142,14 +1145,9 @@
                 if (p.role === "player" && p.lives > 0) {
                     let isMe = (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
                     
-                    // Sembunyikan pemain sendiri jika sedang delay respawn
+                    // Sembunyikan mutlak jika sedang dalam masa respawn delay (is_hidden dari server)
+                    if (p.is_hidden) continue;
                     if (isMe && isRespawningDelay) continue;
-
-                    // Sembunyikan Bot jika sedang dalam masa delay respawn dari server
-                    let serverCurrentTime = Date.now() / 1000;
-                    if (p.is_bot && p.respawn_delay_until && serverCurrentTime < p.respawn_delay_until) {
-                        continue;
-                    }
 
                     ctx.save();
                     let renderX = isMe ? x : (interpolatedClients[id] ? interpolatedClients[id].x : p.x);
@@ -1158,8 +1156,9 @@
 
                     ctx.translate(renderX, renderY);
 
+                    // Efek Blinking (berkedip) saat masa kebal aktif
                     if (p.is_invulnerable) {
-                        ctx.globalAlpha = (Math.floor(Date.now() / 80) % 2 === 0) ? 0.25 : 1.0;
+                        ctx.globalAlpha = (Math.floor(Date.now() / 80) % 2 === 0) ? 0.2 : 1.0;
                     }
 
                     let frameIndex = DIRECTION_SPRITES[pDir] !== undefined ? DIRECTION_SPRITES[pDir] : 3;
