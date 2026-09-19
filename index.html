@@ -394,11 +394,9 @@
         mapBgImage.src = "maps.png";
         let bgOffset = 0;
 
-        // Gambar Sprite Ledakan
         let explosionSprite = new Image();
         explosionSprite.src = "explosion.png";
         
-        // Array untuk menyimpan efek ledakan aktif di map
         let activeExplosions = [];
 
         const SPRITE_COLS = 4;
@@ -687,18 +685,16 @@
                 document.getElementById("botCountSelect").value = incomingState.bot_count;
             }
 
-            // Deteksi perubahan nyawa (terkena tembakan) untuk SEMUA client (termasuk bot & player lain) di state baru
             if (gameState && gameState.clients) {
                 for (let id in incomingState.clients) {
                     let newClient = incomingState.clients[id];
                     let oldClient = gameState.clients[id];
                     if (oldClient && newClient.lives < oldClient.lives) {
-                        // Tambahkan animasi ledakan di posisi pesawat yang tertembak
                         activeExplosions.push({
                             x: oldClient.x,
                             y: oldClient.y,
                             startTime: Date.now(),
-                            duration: 600 // Durasi total animasi ledakan dalam milidetik (0.6 detik)
+                            duration: 600
                         });
                     }
                 }
@@ -1144,18 +1140,27 @@
                 ctx.setTransform(1, 0, 0, 1, 0, 0);
             }
 
+            // --- PERBAIKAN LOOPING BACKGROUND MAPS.PNG ---
             bgOffset += 0.2;
             if (mapBgImage.complete && mapBgImage.naturalWidth !== 0) {
-                let pattern = ctx.createPattern(mapBgImage, "repeat");
-                ctx.save();
-                ctx.translate(bgOffset, bgOffset * 0.5);
-                ctx.fillStyle = pattern;
-                ctx.fillRect(-1000, -1000, 3200, 2800);
-                ctx.restore();
+                let tileW = mapBgImage.naturalWidth;
+                let tileH = mapBgImage.naturalHeight;
+                if (tileW <= 0) tileW = 512;
+                if (tileH <= 0) tileH = 512;
+
+                let startX = Math.floor((-2000 + bgOffset) / tileW) * tileW - (bgOffset % tileW);
+                let startY = Math.floor((-2000 + (bgOffset * 0.5)) / tileH) * tileH - ((bgOffset * 0.5) % tileH);
+
+                for (let px = startX; px < 3500; px += tileW) {
+                    for (let py = startY; py < 3000; py += tileH) {
+                        ctx.drawImage(mapBgImage, px, py, tileW, tileH);
+                    }
+                }
             } else {
                 ctx.fillStyle = "#0b1329";
-                ctx.fillRect(0, 0, 1200, 800);
+                ctx.fillRect(-2000, -2000, 5000, 5000);
             }
+            // ----------------------------------------------
 
             if (hitEffectTimer > 0) {
                 canvas.style.borderColor = "#ef4444";
@@ -1229,13 +1234,12 @@
                 }
             }
 
-            // --- RENDER ANIMASI LEDAKAN (Sprite Sheet 2 Baris x 3 Kolom) ---
             let nowTime = Date.now();
             activeExplosions = activeExplosions.filter(exp => {
                 let elapsed = nowTime - exp.startTime;
-                if (elapsed >= exp.duration) return false; // Hapus jika sudah selesai
+                if (elapsed >= exp.duration) return false;
 
-                let totalFrames = 6; // 2 baris x 3 kolom
+                let totalFrames = 6;
                 let currentFrame = Math.floor((elapsed / exp.duration) * totalFrames);
                 if (currentFrame >= totalFrames) currentFrame = totalFrames - 1;
 
@@ -1253,7 +1257,7 @@
 
                 ctx.save();
                 ctx.translate(exp.x, exp.y);
-                let drawSize = 50; // Ukuran ledakan di layar
+                let drawSize = 50;
                 if (explosionSprite.complete && explosionSprite.naturalWidth !== 0) {
                     ctx.drawImage(explosionSprite, eSX, eSY, eSW, eSH, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
                 }
@@ -1261,7 +1265,6 @@
 
                 return true;
             });
-            // -------------------------------------------------------------
 
             ctx.restore(); 
 
