@@ -240,6 +240,9 @@
 </head>
 <body>
 
+    <!-- Audio Efek Ledakan -->
+    <audio id="explosionSound" src="explosion.mp3" preload="auto"></audio>
+
     <div id="wakeUpScreen" class="card" style="display: block; text-align: center;">
         <h2>Menghubungkan ke Server...</h2>
         <p id="wakeUpStatus" style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Loading...</p>
@@ -596,6 +599,17 @@
             } catch (e) {}
         }
 
+        // Fungsi Pemutar Suara explosion.mp3
+        function playExplosionSound() {
+            let sound = document.getElementById("explosionSound");
+            if (sound) {
+                sound.currentTime = 0;
+                sound.play().catch(function(error) {
+                    console.log("Gagal memutar audio explosion: ", error);
+                });
+            }
+        }
+
         function connectServer(role, customName = "") {
             userRole = (role !== 'admin') ? 'player' : 'admin';
             playerName = (userRole === 'admin') ? "Admin Spectator" : customName;
@@ -699,6 +713,8 @@
                             startTime: Date.now(),
                             duration: 600
                         });
+                        // Putar suara ledakan mp3
+                        playExplosionSound();
                     }
                 }
             }
@@ -1144,15 +1160,14 @@
             }
 
             // --- PERBAIKAN LOOPING BACKGROUND MAPS.PNG ---
-            bgOffset += 0.2;
             if (mapBgImage.complete && mapBgImage.naturalWidth !== 0) {
                 let tileW = mapBgImage.naturalWidth;
                 let tileH = mapBgImage.naturalHeight;
                 if (tileW <= 0) tileW = 512;
                 if (tileH <= 0) tileH = 512;
 
-                let startX = Math.floor((-2000 + bgOffset) / tileW) * tileW - (bgOffset % tileW);
-                let startY = Math.floor((-2000 + (bgOffset * 0.5)) / tileH) * tileH - ((bgOffset * 0.5) % tileH);
+                let startX = Math.floor(-2000 / tileW) * tileW;
+                let startY = Math.floor(-2000 / tileH) * tileH;
 
                 for (let px = startX; px < 3500; px += tileW) {
                     for (let py = startY; py < 3000; py += tileH) {
