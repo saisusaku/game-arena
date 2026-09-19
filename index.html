@@ -411,10 +411,14 @@
         const SPRITE_ROWS = 3;
 
         const DIRECTION_SPRITES = {
-            'up': 7,
-            'down': 4,
-            'right': 5,
-            'left': 6
+            'up': 0,              // Menghadap atas (sesuaikan dengan posisi pesawat tegak)
+            'down': 3,            // Menghadap bawah
+            'right': 5,           // Menghadap kanan
+            'left': 6,            // Menghadap kiri
+            'up-left': 10,         // Serong kiri atas (Pojok Kiri Atas)[cite: 12]
+            'up-right': 2,        // Serong kanan atas (Pojok Kanan Atas)[cite: 12]
+            'down-left': 4,       // Serong kiri bawah
+            'down-right': 3      // Serong kanan bawah
         };
 
         function getWebSocketURL() {
