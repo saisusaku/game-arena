@@ -794,7 +794,6 @@
 
                     lastAttackerName = foundAttacker;
                     isRespawningDelay = true;
-                    // Durasi respawn delay 5 detik
                     respawnTimerEnd = Date.now() + 5000;
                 }
                 
@@ -886,7 +885,6 @@
                 let sLeft = Math.max(0, Math.ceil((respawnTimerEnd - Date.now()) / 1000));
                 document.getElementById("myLivesStatus").innerText = `Respawn (${sLeft}s)...`;
             } else {
-                // Cari apakah diri sendiri sedang dalam masa kebal (blinking)
                 let myClientObj = Object.values(gameState.clients || {}).find(p => !p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
                 let invulText = (myClientObj && myClientObj.is_invulnerable) ? " 🛡️ [KEBAL]" : "";
                 let ammoText = isReloading ? "🔄 Reloading..." : `Peluru: [${ammo}/${maxAmmo}]`;
@@ -1145,7 +1143,7 @@
                 if (p.role === "player" && p.lives > 0) {
                     let isMe = (!p.is_bot && p.name.trim().toLowerCase() === playerName.trim().toLowerCase());
                     
-                    // Sembunyikan mutlak jika sedang dalam masa respawn delay (is_hidden dari server)
+                    // ATURAN MUTLAK: Jika is_hidden bernilai true dari server (masa respawn), jangan render sama sekali!
                     if (p.is_hidden) continue;
                     if (isMe && isRespawningDelay) continue;
 
@@ -1156,7 +1154,7 @@
 
                     ctx.translate(renderX, renderY);
 
-                    // Efek Blinking (berkedip) saat masa kebal aktif
+                    // Efek Blinking (berkedip) HANYA SAAT masa kebal aktif setelah respawn selesai
                     if (p.is_invulnerable) {
                         ctx.globalAlpha = (Math.floor(Date.now() / 80) % 2 === 0) ? 0.2 : 1.0;
                     }
