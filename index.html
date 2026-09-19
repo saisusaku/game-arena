@@ -240,8 +240,10 @@
 </head>
 <body>
 
-    <!-- Audio Efek Ledakan -->
+    <!-- Audio Efek Kustom -->
     <audio id="explosionSound" src="explosion.mp3" preload="auto"></audio>
+    <audio id="gunshotSound" src="gunshot.mp3" preload="auto"></audio>
+    <audio id="gunreloadSound" src="gunreload.mp3" preload="auto"></audio>
 
     <div id="wakeUpScreen" class="card" style="display: block; text-align: center;">
         <h2>Menghubungkan ke Server...</h2>
@@ -567,14 +569,7 @@
                 gainNode.connect(audioCtx.destination);
                 let now = audioCtx.currentTime;
 
-                if (type === "shoot") {
-                    osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(400, now);
-                    osc.frequency.exponentialRampToValueAtTime(80, now + 0.1);
-                    gainNode.gain.setValueAtTime(0.15, now);
-                    gainNode.gain.linearRampToValueAtTime(0.01, now + 0.1);
-                    osc.start(now); osc.stop(now + 0.1);
-                } else if (type === "hit") {
+                if (type === "hit") {
                     osc.type = 'square';
                     osc.frequency.setValueAtTime(150, now);
                     osc.frequency.linearRampToValueAtTime(40, now + 0.25);
@@ -588,24 +583,17 @@
                     gainNode.gain.setValueAtTime(0.25, now);
                     gainNode.gain.linearRampToValueAtTime(0.01, now + 0.15);
                     osc.start(now); osc.stop(now + 0.15);
-                } else if (type === "reload") {
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(300, now);
-                    osc.frequency.linearRampToValueAtTime(600, now + 0.5);
-                    gainNode.gain.setValueAtTime(0.1, now);
-                    gainNode.gain.linearRampToValueAtTime(0.01, now + 0.5);
-                    osc.start(now); osc.stop(now + 0.5);
                 }
             } catch (e) {}
         }
 
-        // Fungsi Pemutar Suara explosion.mp3
-        function playExplosionSound() {
-            let sound = document.getElementById("explosionSound");
+        // Fungsi Pemutar Suara Kustom (Explosion, Gunshot, Gunreload)
+        function playAudioFile(elementId) {
+            let sound = document.getElementById(elementId);
             if (sound) {
                 sound.currentTime = 0;
                 sound.play().catch(function(error) {
-                    console.log("Gagal memutar audio explosion: ", error);
+                    console.log("Gagal memutar audio " + elementId + ": ", error);
                 });
             }
         }
@@ -713,8 +701,8 @@
                             startTime: Date.now(),
                             duration: 600
                         });
-                        // Putar suara ledakan mp3
-                        playExplosionSound();
+                        // Putar suara ledakan explosion.mp3
+                        playAudioFile("explosionSound");
                     }
                 }
             }
@@ -1057,13 +1045,15 @@
 
             if (ws && ws.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify({ type: "shoot", x: spawnX, y: spawnY, dx: dx, dy: dy }));
-                playSound("shoot");
+                // Putar suara tembakan gunshot.mp3
+                playAudioFile("gunshotSound");
                 ammo--;
                 updateGameHeader();
 
                 if (ammo <= 0) {
                     isReloading = true;
-                    playSound("reload");
+                    // Putar suara reload gunreload.mp3
+                    playAudioFile("gunreloadSound");
                     setTimeout(() => {
                         ammo = maxAmmo;
                         isReloading = false;
@@ -1159,7 +1149,6 @@
                 ctx.setTransform(1, 0, 0, 1, 0, 0);
             }
 
-            // --- PERBAIKAN LOOPING BACKGROUND MAPS.PNG ---
             if (mapBgImage.complete && mapBgImage.naturalWidth !== 0) {
                 let tileW = mapBgImage.naturalWidth;
                 let tileH = mapBgImage.naturalHeight;
@@ -1178,7 +1167,6 @@
                 ctx.fillStyle = "#0b1329";
                 ctx.fillRect(-2000, -2000, 5000, 5000);
             }
-            // ----------------------------------------------
 
             if (hitEffectTimer > 0) {
                 canvas.style.borderColor = "#ef4444";
