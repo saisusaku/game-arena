@@ -390,10 +390,16 @@
         let planeSprite = new Image();
         planeSprite.src = "warsplane.png";
 
-        // Variabel untuk background map (awan looping)
         let mapBgImage = new Image();
         mapBgImage.src = "maps.png";
         let bgOffset = 0;
+
+        // Gambar Sprite Ledakan
+        let explosionSprite = new Image();
+        explosionSprite.src = "explosion.png";
+        
+        // Array untuk menyimpan efek ledakan aktif di map
+        let activeExplosions = [];
 
         const SPRITE_COLS = 4;
         const SPRITE_ROWS = 3;
@@ -681,6 +687,23 @@
                 document.getElementById("botCountSelect").value = incomingState.bot_count;
             }
 
+            // Deteksi perubahan nyawa (terkena tembakan) untuk SEMUA client (termasuk bot & player lain) di state baru
+            if (gameState && gameState.clients) {
+                for (let id in incomingState.clients) {
+                    let newClient = incomingState.clients[id];
+                    let oldClient = gameState.clients[id];
+                    if (oldClient && newClient.lives < oldClient.lives) {
+                        // Tambahkan animasi ledakan di posisi pesawat yang tertembak
+                        activeExplosions.push({
+                            x: oldClient.x,
+                            y: oldClient.y,
+                            startTime: Date.now(),
+                            duration: 600 // Durasi total animasi ledakan dalam milidetik (0.6 detik)
+                        });
+                    }
+                }
+            }
+
             if (incomingState.game_over && !gameState.game_over) {
                 let players = Object.values(incomingState.clients || {}).filter(p => p.role === "player");
                 players.sort((a, b) => b.kills - a.kills);
@@ -839,6 +862,7 @@
             qrGenerated = false;
             lastMatchSummary = null;
             isRespawningDelay = false;
+            activeExplosions = [];
         }
 
         function returnToLogin() {
@@ -862,6 +886,7 @@
             ammo = 8;
             isReloading = false;
             isRespawningDelay = false;
+            activeExplosions = [];
         }
 
         function updateGameHeader() {
@@ -1119,7 +1144,6 @@
                 ctx.setTransform(1, 0, 0, 1, 0, 0);
             }
 
-            // Pergeseran latar belakang untuk efek looping awan
             bgOffset += 0.2;
             if (mapBgImage.complete && mapBgImage.naturalWidth !== 0) {
                 let pattern = ctx.createPattern(mapBgImage, "repeat");
@@ -1204,6 +1228,40 @@
                     ctx.fillText(`${p.name} (❤️${p.lives} | 🎯${p.kills})`, renderX, renderY + 35);
                 }
             }
+
+            // --- RENDER ANIMASI LEDAKAN (Sprite Sheet 2 Baris x 3 Kolom) ---
+            let nowTime = Date.now();
+            activeExplosions = activeExplosions.filter(exp => {
+                let elapsed = nowTime - exp.startTime;
+                if (elapsed >= exp.duration) return false; // Hapus jika sudah selesai
+
+                let totalFrames = 6; // 2 baris x 3 kolom
+                let currentFrame = Math.floor((elapsed / exp.duration) * totalFrames);
+                if (currentFrame >= totalFrames) currentFrame = totalFrames - 1;
+
+                let expCols = 3;
+                let expRows = 2;
+                let eSheetW = explosionSprite.width || 600;
+                let eSheetH = explosionSprite.height || 400;
+                let eSW = eSheetW / expCols;
+                let eSH = eSheetH / expRows;
+
+                let eCol = currentFrame % expCols;
+                let eRow = Math.floor(currentFrame / expCols);
+                let eSX = eCol * eSW;
+                let eSY = eRow * eSH;
+
+                ctx.save();
+                ctx.translate(exp.x, exp.y);
+                let drawSize = 50; // Ukuran ledakan di layar
+                if (explosionSprite.complete && explosionSprite.naturalWidth !== 0) {
+                    ctx.drawImage(explosionSprite, eSX, eSY, eSW, eSH, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
+                }
+                ctx.restore();
+
+                return true;
+            });
+            // -------------------------------------------------------------
 
             ctx.restore(); 
 
