@@ -619,7 +619,7 @@
                     
                     if (!qrGenerated && typeof QRCode !== 'undefined') {
                         document.getElementById("qrcode").innerHTML = "";
-                        let targetUrl = "https://www.kepotekno.com/2026/09/kepogames-grand-arena-shoter-pvp.html";
+                        let targetUrl = "https://www.kepotekno.com/play.php?id=2";
                         new QRCode(document.getElementById("qrcode"), {
                             text: targetUrl, width: 90, height: 90, colorDark: "#0f172a", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
                         });
